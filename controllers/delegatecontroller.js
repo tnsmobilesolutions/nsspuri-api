@@ -1,20 +1,20 @@
 const delegate = require("../model/delegate");
 
 
-// Create delegate
+// Create Delegate
 const delegate_create = async (req, res) => {};
 
-// All delegate
+// All Delegate
 const delegate_all = async (req, res) => {};
 
-// Single delegate
+// Single Delegate
 const delegate_details = async (req, res) => {};
 
-// Update delegate
-const delegate_update = (req, res) => {};
+// Update Delegate
+const delegate_update = async (req, res) => {};
 
-// Delete delegate
-const delegate_delete = (req, res) => {};
+// Delete Delegate
+const delegate_delete = async (req, res) => {};
 
 
 module.exports = {

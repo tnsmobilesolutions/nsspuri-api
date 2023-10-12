@@ -1,20 +1,20 @@
 const payment = require("../model/payment");
 
 
-// Create payment
+// Create Payment
 const payment_create = async (req, res) => {};
 
-// All payment
+// All Payment
 const payment_all = async (req, res) => {};
 
-// Single payment
+// Single Payment
 const payment_details = async (req, res) => {};
 
-// Update payment
-const payment_update = (req, res) => {};
+// Update Payment
+const payment_update = async (req, res) => {};
 
-// Delete payment
-const payment_delete = (req, res) => {};
+// Delete Payment
+const payment_delete = async (req, res) => {};
 
 
 module.exports = {
