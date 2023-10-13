@@ -1,0 +1,26 @@
+version: "3.9"
+
+# Define the services that make up the application
+services:
+  # Service named 'prod_nodejs'
+  prod_nodejs:
+    # Build the service using the Dockerfile in the current directory
+    build: .
+    # Always restart the service if it goes down
+    restart: always
+    # Mount the current directory as a volume inside the container at '/app'
+    # Mount the '/app/node_modules' directory inside the container.
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    # Map port 3000 inside the container to port 3000 on the host
+    ports:
+      - 3300:3000
+    # Set environment variables for the service
+    environment:
+      # Define the port that the Node.js application will listen on
+      PORT: 3000
+      # Set the Node.js environment to production mode
+      NODE_ENV: production
+      # Set the MongoDB connection URI with authentication from .env file
+      MONGODB_URI: $MONGODB_URI
