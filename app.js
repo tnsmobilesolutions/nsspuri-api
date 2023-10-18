@@ -8,11 +8,14 @@ const bodyParser = require("body-parser");
 dotenv.config();
 
 // Connect to MongoDB
-mongoose.connect(
-    process.env.MONGODB_URI,
-    {useUnifiedTopology: true, useNewUrlParser: true})
-    .then(() => console.log("Connected to DB"))
-    .catch((error) => console.log("Error connecting to DB", error));
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+}).then(() => {
+    console.log("Connected to DB")
+}).catch(error => {
+    console.log("Error connecting to DB", error)
+});
 
 // Middlewares
 app.use(express.json());
