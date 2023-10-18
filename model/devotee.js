@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const devoteeSchema = new mongoose.Schema({
     name: String,
-    mobileNumber: Number,
+    mobileNumber: String,
     emailId: String,
     dob: String,
     bloodGroup: String,
@@ -18,7 +18,16 @@ const devoteeSchema = new mongoose.Schema({
     isGruhasanaApproved: Boolean,
     householdMembersCount: Number,
     devoteeId: String,
-    uid: String
+    uid: String,
+    address : {
+        addressLine1: String,
+        addressLine2: String,
+        city: String,
+        state: String,
+        country: String,
+        postalCode: Number,
+        addressId: String
+    }
 });
 
 module.exports = mongoose.model("devotee", devoteeSchema);
