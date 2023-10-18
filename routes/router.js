@@ -13,7 +13,7 @@ router.post("/devotee", devoteeController.devotee_create);
 router.put("/devotee/:id", devoteeController.devotee_update);
 router.get("/devotee", devoteeController.devotee_all);
 router.get("/devotee/:id", devoteeController.devotee_details);
-router.get("/devotee/:uid", devoteeController.devotee_details_uid);
+router.get("/login/:uid", devoteeController.devotee_details_uid);
 router.delete("/devotee/:id", devoteeController.devotee_delete);
 
 // Sammilani Delegate Route
