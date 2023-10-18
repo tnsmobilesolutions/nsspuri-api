@@ -8,11 +8,17 @@ const devoteeSchema = new mongoose.Schema({
     bloodGroup: String,
     gender: String,
     presentAddress: String,
+    permanentAddress: String,
     sangha: String,
     profilePhotoUrl: String,
-    isApprover: Boolean,
+    isKYDVerified: Boolean,
+    hasGruhasana: String,
+    isApproved: Boolean,
     isAdmin: Boolean,
-    devoteeId: String
+    isGruhasanaApproved: Boolean,
+    householdMembersCount: Number,
+    devoteeId: String,
+    uid: String
 });
 
 module.exports = mongoose.model("devotee", devoteeSchema);
