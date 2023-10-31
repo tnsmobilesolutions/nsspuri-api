@@ -30,6 +30,15 @@ const devotee_details = async (req, res) => {
         res.status(400).json({"error":error.message});
     }
 };
+// Single Devotee by uid
+const devotee_details_uid = async (req, res) => {
+    try {
+        const singleDevotee = await devotee.findOne({uid:req.params.uid})
+        res.status(200).json({singleDevotee})
+    } catch (error) {
+        res.status(400).json({"error":error.message});
+    }
+};
 
 // Update Devotee
 const devotee_update = async (req, res) => {
@@ -56,6 +65,7 @@ module.exports = {
     devotee_create,
     devotee_all,
     devotee_details,
+    devotee_details_uid,
     devotee_update,
     devotee_delete
 }
