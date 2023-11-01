@@ -1,4 +1,5 @@
 const devotee = require("../model/devotee");
+const jwt = require("jsonwebtoken");
 
 
 // Create Devotee
@@ -31,10 +32,12 @@ const devotee_details = async (req, res) => {
     }
 };
 // Single Devotee by uid
-const devotee_details_uid = async (req, res) => {
+const devoteeLogin = async (req, res) => {
     try {
         const singleDevotee = await devotee.findOne({uid:req.params.uid})
-        res.status(200).json({singleDevotee})
+        const accesstoken = jwt.sign({singleDevotee}, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '2d' });
+   let data = { singleDevotee: singleDevotee, accesstoken: accesstoken }
+        res.status(200).json(data)
     } catch (error) {
         res.status(400).json({"error":error.message});
     }
@@ -65,7 +68,7 @@ module.exports = {
     devotee_create,
     devotee_all,
     devotee_details,
-    devotee_details_uid,
+    devoteeLogin,
     devotee_update,
     devotee_delete
 }

@@ -6,49 +6,81 @@ const transactionController = require("../controllers/transactionController")
 const sanghaController = require("../controllers/sanghaController")
 const addressController = require("../controllers/addressController")
 const sammilaniController = require("../controllers/sammilaniController")
+const jwt = require("jsonwebtoken")
+
+
+//Authentication Token
+function autenticateToken(req,res,next) {
+    const authHeader =  req.headers["authorization"];
+    const token = authHeader?.split(' ')[1];
+        if(token == null) return res.sendStatus(401);
+        if(token == undefined) return res.sendStatus("bad requeat");
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err,user)=>{
+    if (err) return res.sendStatus(403);
+    req.user = user
+    next()
+        });
+    }
+
+//Get request 
+function getRequest(str,func){
+    return router.get(str,autenticateToken,func);
+    }
+    //post request 
+    function postRequest(str,func){
+    return router.post(str,autenticateToken,func);
+    }
+    //put request 
+    function putRequest(str,func){
+    return router.put(str,autenticateToken,func);
+    }
+    //delete request 
+    function deleteRequest(str,func){
+    return router.delete(str,func);
+    }
 
 
 // Devotee Route
-router.post("/devotee", devoteeController.devotee_create);
-router.put("/devotee/:id", devoteeController.devotee_update);
-router.get("/devotee", devoteeController.devotee_all);
-router.get("/devotee/:id", devoteeController.devotee_details);
-router.get("/login/:uid", devoteeController.devotee_details_uid);
-router.delete("/devotee/:id", devoteeController.devotee_delete);
+postRequest("/devotee", devoteeController.devotee_create);
+putRequest("/devotee/:id", devoteeController.devotee_update);
+getRequest("/devotee", devoteeController.devotee_all);
+getRequest("/devotee/:id", devoteeController.devotee_details);
+router.get("/login/:uid", devoteeController.devoteeLogin);
+deleteRequest("/devotee/:id", devoteeController.devotee_delete);
 
 // Sammilani Delegate Route
-router.post("/sammilani-delegate", sammilani_delegateController.sammilani_delegate_create);
-router.put("/sammilani-delegate/:id", sammilani_delegateController.sammilani_delegate_update);
-router.get("/sammilani-delegate", sammilani_delegateController.sammilani_delegate_all);
-router.get("/sammilani-delegate/:id", sammilani_delegateController.sammilani_delegate_details);
-router.delete("/sammilani-delegate/:id", sammilani_delegateController.sammilani_delegate_delete);
+postRequest("/sammilani-delegate", sammilani_delegateController.sammilani_delegate_create);
+putRequest("/sammilani-delegate/:id", sammilani_delegateController.sammilani_delegate_update);
+getRequest("/sammilani-delegate", sammilani_delegateController.sammilani_delegate_all);
+getRequest("/sammilani-delegate/:id", sammilani_delegateController.sammilani_delegate_details);
+deleteRequest("/sammilani-delegate/:id", sammilani_delegateController.sammilani_delegate_delete);
 
 // Sammilani Route
-router.post("/sammilani", sammilaniController.sammilani_create);
-router.put("/sammilani/:id", sammilaniController.sammilani_update);
-router.get("/sammilani", sammilaniController.sammilani_all);
-router.get("/sammilani/:id", sammilaniController.sammilani_details);
-router.delete("/sammilani/:id", sammilaniController.sammilani_delete);
+postRequest("/sammilani", sammilaniController.sammilani_create);
+putRequest("/sammilani/:id", sammilaniController.sammilani_update);
+getRequest("/sammilani", sammilaniController.sammilani_all);
+getRequest("/sammilani/:id", sammilaniController.sammilani_details);
+deleteRequest("/sammilani/:id", sammilaniController.sammilani_delete);
 
 // Transaction Route
-router.post("/transaction", transactionController.transaction_create);
-router.put("/transaction/:id", transactionController.transaction_update);
-router.get("/transaction", transactionController.transaction_all);
-router.get("/transaction/:id", transactionController.transaction_details);
-router.delete("/transaction/:id", transactionController.transaction_delete);
+postRequest("/transaction", transactionController.transaction_create);
+putRequest("/transaction/:id", transactionController.transaction_update);
+getRequest("/transaction", transactionController.transaction_all);
+getRequest("/transaction/:id", transactionController.transaction_details);
+deleteRequest("/transaction/:id", transactionController.transaction_delete);
 
 // Sangha Route
-router.post("/sangha", sanghaController.sangha_create);
-router.put("/sangha/:id", sanghaController.sangha_update);
-router.get("/sangha", sanghaController.sangha_all);
-router.get("/sangha/:id", sanghaController.sangha_details);
-router.delete("/sangha/:id", sanghaController.sangha_delete);
+postRequest("/sangha", sanghaController.sangha_create);
+putRequest("/sangha/:id", sanghaController.sangha_update);
+getRequest("/sangha", sanghaController.sangha_all);
+getRequest("/sangha/:id", sanghaController.sangha_details);
+deleteRequest("/sangha/:id", sanghaController.sangha_delete);
 
 // Address Route
-router.post("/address", addressController.address_create);
-router.put("/address/:id", addressController.address_update);
-router.get("/address", addressController.address_all);
-router.get("/address/:id", addressController.address_details);
-router.delete("/address/:id", addressController.address_delete);
+postRequest("/address", addressController.address_create);
+putRequest("/address/:id", addressController.address_update);
+getRequest("/address", addressController.address_all);
+getRequest("/address/:id", addressController.address_details);
+deleteRequest("/address/:id", addressController.address_delete);
 
 module.exports = router;
