@@ -19,6 +19,10 @@ const devoteeSchema = new mongoose.Schema({
     householdMembersCount: Number,
     devoteeId: String,
     uid: String,
+    createdById: String,
+    updatedById: String,
+    createdOn: String,
+    updatedOn: String,
     address : {
         addressLine1: String,
         addressLine2: String,
