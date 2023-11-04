@@ -35,7 +35,7 @@ const devotee_all = async (req, res) => {
 // Single Devotee
 const devotee_details = async (req, res) => {
     try {
-        const singleDevotee = await devotee.find({devoteeId:req.params.id})
+        const singleDevotee = await devotee.find({devoteeId:req.user.singleDevotee.devoteeId})
         res.status(200).json({singleDevotee})
     } catch (error) {
         res.status(400).json({"error":error.message});
