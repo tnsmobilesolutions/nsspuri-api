@@ -51,6 +51,15 @@ const devotee_with_relatives = async (req, res) => {
         res.status(400).json({"error":error.message});
     }
 };
+// search Devotee with Relatives
+const searchDevotee = async (req, res) => {
+    try {
+        const searchDevotee = await devotee.find({name: req.query.devoteeName})
+        res.status(200).json({searchDevotee})
+    } catch (error) {
+        res.status(400).json({"error":error.message});
+    }
+};
 
 // Single Devotee by uid
 const devoteeLogin = async (req, res) => {
@@ -93,4 +102,5 @@ module.exports = {
     devotee_update,
     devotee_delete,
     devotee_with_relatives,
+    searchDevotee
 }
