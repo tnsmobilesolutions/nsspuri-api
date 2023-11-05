@@ -31,7 +31,8 @@ const devoteeSchema = new mongoose.Schema({
         country: String,
         postalCode: Number,
         addressId: String
-    }
+    },
 });
+
 
 module.exports = mongoose.model("devotee", devoteeSchema);
