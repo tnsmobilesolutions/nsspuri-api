@@ -1,6 +1,7 @@
 const devotee = require("../model/devotee");
 const jwt = require("jsonwebtoken");
-const moment = require("moment");
+const moment = require('moment-timezone');
+
 
 
 // Create Devotee
