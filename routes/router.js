@@ -41,7 +41,8 @@ function getRequest(str,func){
 
 
 // Devotee Route
-postRequest("/devotee", devoteeController.devotee_create);
+router.post("/devotee", devoteeController.devotee_create);
+postRequest("/devotee/relative", devoteeController.createRelativeDevotee);
 putRequest("/devotee/:id", devoteeController.devotee_update);
 getRequest("/devotee", devoteeController.devotee_all);
 getRequest("/devotee/currentUser", devoteeController.devotee_details);

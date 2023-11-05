@@ -7,6 +7,19 @@ const moment = require("moment");
 const devotee_create = async (req, res) => {
     try {
         let data = req.body
+        data.createdById = data.devoteeId;
+        data.createdOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
+        data.updatedOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
+        const createDevotee = await devotee.create(data)
+        res.status(200).json(createDevotee)
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({"error":error.message});
+    }
+};
+const createRelativeDevotee = async (req, res) => {
+    try {
+        let data = req.body
         data.createdById = req.user.devoteeId
         data.createdOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
         data.updatedOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
@@ -119,5 +132,6 @@ module.exports = {
     devotee_update,
     devotee_delete,
     devotee_with_relatives,
-    searchDevotee
+    searchDevotee,
+    createRelativeDevotee
 }
