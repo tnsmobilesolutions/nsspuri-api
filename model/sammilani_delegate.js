@@ -6,7 +6,7 @@ const sammilaniDelegateSchema = new mongoose.Schema({
     devoteeId: String,
     number: Number,
     delegateFee: Number,
-    status: String, //dataSubbmited/paid/rejected/accepted/printed/withdrawn/lost/reissued
+    feestatus: String, //dataSubbmited/paid/rejected/accepted/printed/withdrawn/lost/reissued
     paymentMode: String,
     transactionId: String,
     preparedBy: String,
