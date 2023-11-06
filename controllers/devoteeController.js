@@ -131,6 +131,57 @@ const devotee_delete = async (req, res) => {
     }
 };
 
+// All Devotee or by status
+const admin_devoteeDashboard = async (req, res) => {
+    try {
+      
+async function devoteeList(status) {
+    let statusby = await devotee.find({status: status});
+    return statusby.length;
+}
+       let allDevotee = await devotee.find().sort({name:1})
+
+        let data = [
+            {
+                status: "allDevotee",
+                count: allDevotee.length,
+            },
+            {
+                status : "paid",
+                count:await devoteeList("paid")
+            },
+            {
+                status: "rejected",
+                count: await devoteeList("rejected"),
+            },
+            {
+                status : "accepted",
+                count: await devoteeList("accepted")
+            },
+            {
+                status: "printed",
+                count: await devoteeList("printed")
+            },
+            {
+                status : "withdrawn",
+                count: await devoteeList("withdrawn")
+            },
+            {
+                status: "lost",
+                count: await devoteeList("lost")
+            },
+            {
+                status : "reissued",
+                count: await devoteeList("reissued")
+            }
+        ]
+        res.status(200).json(data)
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({"error":error.message});
+    }
+};
+
 
 module.exports = {
     devotee_create,
@@ -141,5 +192,6 @@ module.exports = {
     devotee_delete,
     devotee_with_relatives,
     searchDevotee,
-    createRelativeDevotee
+    createRelativeDevotee,
+    admin_devoteeDashboard
 }
