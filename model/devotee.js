@@ -1,9 +1,11 @@
 const mongoose = require("mongoose");
+const moment = require('moment-timezone');
 
+const statusEnum = ["dataSubmitted", "paid", "rejected", "accepted", "printed", "withdrawn", "lost", "reissued", ""];
 const devoteeSchema = new mongoose.Schema({
-    name: String,
-    mobileNumber: String,
-    emailId: String,
+    name: { type: String,},
+    mobileNumber: { type: String},
+    emailId: { type: String},
     dob: String,
     bloodGroup: String,
     gender: String,
@@ -11,19 +13,20 @@ const devoteeSchema = new mongoose.Schema({
     permanentAddress: String,
     sangha: String,
     profilePhotoUrl: String,
-    isKYDVerified: Boolean,
+    isKYDVerified: { type: Boolean, default: false },
     hasGruhasana: String,
-    isApproved: Boolean,
-    isAdmin: Boolean,
-    isGruhasanaApproved: Boolean,
+    isApproved: { type: Boolean, default: false },
+    isAdmin: { type: Boolean, default: false },
+    isGruhasanaApproved: { type: Boolean, default: false },
     householdMembersCount: Number,
-    devoteeId: String,
+    devoteeId: { type: String, unique: true, required: true },
     uid: String,
     createdById: String,
     updatedById: String,
-    createdOn: String,
-    updatedOn: String,
-    address : {
+    createdOn: { type: String, default: moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A") },
+    updatedOn: { type: String, default: moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A") },
+    status: { type: String, default: "dataSubbmited", enum: statusEnum }, // You can set your preferred default status here
+    address: {
         addressLine1: String,
         addressLine2: String,
         city: String,
@@ -34,5 +37,7 @@ const devoteeSchema = new mongoose.Schema({
     },
 });
 
-
 module.exports = mongoose.model("devotee", devoteeSchema);
+
+    // status: String, //dataSubbmited/paid/rejected/accepted/printed/withdrawn/lost/reissued
+  

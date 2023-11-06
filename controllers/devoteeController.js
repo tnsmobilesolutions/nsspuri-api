@@ -71,8 +71,15 @@ const devotee_with_relatives = async (req, res) => {
 };
 // search Devotee with Relatives
 const searchDevotee = async (req, res) => {
+    const searchDevotee = [];
     try {
-        const searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeName}`, '$options': 'i' }})
+        if(req.query.status){
+            searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }})
+        }
+        if(req.query.devoteeName){
+         searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeName}`, '$options': 'i' }});
+        }
+       
         res.status(200).json({searchDevotee})
     } catch (error) {
         console.log(error);
