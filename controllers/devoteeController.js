@@ -71,7 +71,7 @@ const devotee_with_relatives = async (req, res) => {
 };
 // search Devotee with Relatives
 const searchDevotee = async (req, res) => {
-    const searchDevotee = [];
+    let searchDevotee;;
     try {
         if(req.query.status){
             searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }})
