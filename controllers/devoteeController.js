@@ -143,34 +143,42 @@ async function devoteeList(status) {
 
         let data = [
             {
+                message: "Total Regesterd Devotee",
                 status: "allDevotee",
                 count: allDevotee.length,
             },
             {
+                message: "Delegate Pranami Paid",
                 status : "paid",
                 count:await devoteeList("paid")
             },
             {
+                message: "Delegate rejected",
                 status: "rejected",
                 count: await devoteeList("rejected"),
             },
             {
+                message: "Delegate accepted",
                 status : "accepted",
                 count: await devoteeList("accepted")
             },
             {
+                message: "Delegate printed",
                 status: "printed",
                 count: await devoteeList("printed")
             },
             {
+                message: "Delegate withdrawn",
                 status : "withdrawn",
                 count: await devoteeList("withdrawn")
             },
             {
+                message: "Delegate lost",
                 status: "lost",
                 count: await devoteeList("lost")
             },
             {
+                message: "Delegate reissued",
                 status : "reissued",
                 count: await devoteeList("reissued")
             }
