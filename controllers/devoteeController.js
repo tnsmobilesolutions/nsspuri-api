@@ -58,6 +58,15 @@ const devotee_details = async (req, res) => {
         res.status(400).json({"error":error.message});
     }
 };
+const devotee_details_by_devoteeId = async (req, res) => {
+    try {
+        const singleDevotee = await devotee.find({devoteeId:req.params.devoteeId})
+        res.status(200).json({singleDevotee})
+    } catch (error) {
+        console.log(error);
+        res.status(400).json({"error":error.message});
+    }
+};
 
 // Single Devotee with Relatives
 const devotee_with_relatives = async (req, res) => {
@@ -198,6 +207,7 @@ module.exports = {
     devotee_create,
     devotee_all,
     devotee_details,
+    devotee_details_by_devoteeId,
     devoteeLogin,
     devotee_update,
     devotee_delete,
