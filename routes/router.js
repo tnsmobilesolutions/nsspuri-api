@@ -46,8 +46,9 @@ postRequest("/devotee/relative", devoteeController.createRelativeDevotee);
 putRequest("/devotee/:id", devoteeController.devotee_update);
 getRequest("/devotee", devoteeController.devotee_all);
 getRequest("/devotee/currentUser", devoteeController.devotee_details);
-getRequest("/devotee/:id", devoteeController.devotee_details_by_devoteeId);
 getRequest("/devotee/relatives", devoteeController.devotee_with_relatives);
+getRequest("/devoteeById/:id", devoteeController.devotee_details_by_devoteeId);
+
 getRequest("/devotee/search", devoteeController.searchDevotee);
 router.get("/login/:uid", devoteeController.devoteeLogin);
 deleteRequest("/devotee/:id", devoteeController.devotee_delete);

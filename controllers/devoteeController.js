@@ -68,7 +68,7 @@ const devotee_details_by_devoteeId = async (req, res) => {
     }
 };
 
-// Single Devotee with Relatives
+// Single Devotee with Relativess
 const devotee_with_relatives = async (req, res) => {
     try {
         const singleDevotee = await devotee.find({createdById: req.user.devoteeId})
