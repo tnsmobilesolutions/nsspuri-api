@@ -28,6 +28,13 @@ const devotee_create = async (req, res) => {
     }
 };
 
+const getPrasadUpdate =  async() => {
+    const currentDate = moment.tz("Asia/Kolkata").format("YYYY-MM-DD");
+    const currentTime = moment.tz("Asia/Kolkata").format("HH:mm");
+
+    
+}
+
 //Add prasd from barcode api
 const prasdUpdatedevotee = async (req,res) => {
     const currentDate = moment.tz("Asia/Kolkata").format("YYYY-MM-DD");
