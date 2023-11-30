@@ -18,12 +18,13 @@ const devoteeSchema = new mongoose.Schema({
     isGruhasanaApproved: { type: Boolean, default: false },
     householdMembersCount: Number,
     devoteeId: { type: String, unique: true, required: true },
+    devoteeCode: { type: Number, unique: true, required: true },
     uid: String,
     createdById: String,
     updatedById: String,
     createdOn: { type: String, default: moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A") },
     updatedOn: { type: String, default: moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A") },
-    status: { type: String, default: "dataSubmitted"}, // You can set your preferred default status here
+    status: { type: String, default: "dataSubmitted"}, 
     address: {
         addressLine1: String,
         addressLine2: String,

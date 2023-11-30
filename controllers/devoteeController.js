@@ -7,7 +7,8 @@ const moment = require('moment-timezone');
 // Create Devotee
 const devotee_create = async (req, res) => {
     try {
-        let data = req.body
+        let data = req.body;
+        let findLastdevoteeCode =await devotee.findOne({}).sort({devoteeCode : -1});
         data.createdById = data.devoteeId;
         data.createdOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
         data.updatedOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
