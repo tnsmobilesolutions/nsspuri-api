@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const router = require("./routes/router");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const morgan = require("morgan");
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 // Middlewares
 app.use(express.json());
 app.use(cors());
+app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use("/", router);
 

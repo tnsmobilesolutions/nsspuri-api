@@ -1,4 +1,5 @@
-module.export ={
+module.exports ={
     devoteemodel: require("./devotee"),
-    sammilaniDelegateModel: require("./sammilani_delegate")
+    prasadModel : require("./prasd_model"),
+    sammilaniDelegateModel: require("./sammilani_delegate"),
 }

@@ -1,6 +1,10 @@
 const devotee = require("../model/devotee");
 const jwt = require("jsonwebtoken");
 const moment = require('moment-timezone');
+const allmodel = require("../model/allmodel");
+const e = require("express");
+const { model } = require("mongoose");
+const dotenv = require("dotenv").config();
 
 
 
@@ -8,9 +12,10 @@ const moment = require('moment-timezone');
 const devotee_create = async (req, res) => {
     try {
         let data = req.body;
-        let findLastdevoteeCode =await devotee.findOne({}).sort({devoteeCode : -1});
+        let findLastdevoteeCode =await devotee.find({}).sort({devoteeCode : -1}).limit(1);
+        console.log("findLastdevoteeCode --- ",findLastdevoteeCode)
         if(findLastdevoteeCode){
-            data.devoteeCode = findLastdevoteeCode.devoteeCode + 1
+            data.devoteeCode = findLastdevoteeCode[0].devoteeCode + 1
         }
         data.createdById = data.devoteeId;
         data.createdOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
@@ -22,6 +27,51 @@ const devotee_create = async (req, res) => {
         res.status(400).json({"error":error.message});
     }
 };
+
+//Add prasd from barcode api
+const prasdUpdatedevotee = async (req,res) => {
+    const currentDate = moment.tz("Asia/Kolkata").format("YYYY-MM-DD");
+    const currentTime = moment.tz("Asia/Kolkata").format("HH:mm");
+try {
+    //order time should be between start time and end time of meal
+compareThreetime : (orderTime, mealStartTime, mealEndTime) => {
+    const orderTimestamp = new Date(`1970-01-01T${orderTime}:00Z`).getTime();
+      const mealStartTimestamp = new Date(`1970-01-01T${mealStartTime}:00Z`).getTime();
+      const mealEndTimestamp = new Date(`1970-01-01T${mealEndTime}:00Z`).getTime();
+      return orderTimestamp >= mealStartTimestamp && orderTimestamp <= mealEndTimestamp;
+  };
+    let devoteeDetails = await allmodel.devoteemodel.findOne({devoteeCode: parseInt(req.params.code, 10)});
+    if(!devoteeDetails) throw "No devotee found on this code";
+    let prasaddetails = await allmodel.prasadModel.findOne({devoteeCode: parseInt(req.params.code, 10)});
+    if (devoteeDetails && prasaddetails) {
+       let prasadData = prasaddetails.prasad.forEach(prasad => {
+        if(prasad.date == currentDate){
+            console.log(currentDate);
+        }else{
+            console.log("outOfDate");
+        }
+       });
+    } else {
+      let result = compareThreetime(currentTime, process.env.balyaStartTime,process.env.balyaEndTime)
+        let data = {
+            devoteeId : devoteeDetails.devoteeId,
+            devoteeCode : devoteeDetails.devoteeCode,
+            prasad : [{
+                date: currentDate,
+                balyaTiming: currentTime
+        }]};
+        await allmodel.prasadModel.create(data);
+    }
+console.log(devoteeDetails);
+res.status(200).json({devoteeDetails})
+} catch (error) {
+    console.log("error: -",e);
+    res.status(500).json({"error - ": error})
+}
+
+};
+
+
 const createRelativeDevotee = async (req, res) => {
     try {
         let data = req.body
@@ -218,5 +268,6 @@ module.exports = {
     devotee_with_relatives,
     searchDevotee,
     createRelativeDevotee,
-    admin_devoteeDashboard
+    admin_devoteeDashboard,
+    prasdUpdatedevotee
 }
