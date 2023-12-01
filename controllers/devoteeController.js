@@ -134,6 +134,11 @@ async function compareThreeTime(orderTime, mealStartTime, mealEndTime) {
 const createRelativeDevotee = async (req, res) => {
     try {
         let data = req.body
+        let findLastdevoteeCode =await devotee.find({}).sort({devoteeCode : -1}).limit(1);
+        console.log("findLastdevoteeCode --- ",findLastdevoteeCode)
+        if(findLastdevoteeCode){
+            data.devoteeCode = findLastdevoteeCode[0].devoteeCode + 1
+        }
         data.createdById = req.user.devoteeId
         data.createdOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
         data.updatedOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
