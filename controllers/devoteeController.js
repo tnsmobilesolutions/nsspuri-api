@@ -88,18 +88,10 @@ const prasdUpdateDevotee = async (req, res) => {
                         newPrasad.ratraTiming = currentTime;
                     }
                     prasadDetails.prasad.push(newPrasad);
-                }
-                
-                await prasadDetails.save();
-                
+                }   
+                await prasadDetails.save();      
                 return res.status(200).json({ error: "Prasad recorded successfully" });
                 
-
-                
-
-                // } else {
-                //     return res.status(400).json({ error: "Invalid time for prasad" });
-                // }
             }
         } else {
             // Create a new prasad entry for the devotee
