@@ -51,7 +51,7 @@ const prasdUpdateDevotee = async (req, res) => {
 
             if (existingPrasad && existingPrasad.balyaTiming && existingPrasad.MadhyannaTiming && existingPrasad.ratriTiming) {
                 // If all timings are updated, show an error that prasad is already taken for today
-                return res.status(500).json({ error: "Prasad already taken for today" });
+                return res.status(400).json({ error: "Prasad already taken for today" });
             }else {
 
                 // Check if the current time falls within any meal timings
@@ -64,8 +64,7 @@ const prasdUpdateDevotee = async (req, res) => {
                 const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
 
                 if (existingPrasad) {
-                    console.log("prasad exist", existingPrasad);
-                    // Check and prevent updates for balyaTiming if already set
+                    console.log("prasad exist", existingPrasad)
                     if (isBalyaTime && !existingPrasad.balyaTiming) {
                         existingPrasad.balyaTiming = currentTime;
                     } else if (isMadhyannaTime && !existingPrasad.madhyanaTiming) {
@@ -73,7 +72,7 @@ const prasdUpdateDevotee = async (req, res) => {
                     } else if (isRatraTime && !existingPrasad.ratraTiming) {
                         existingPrasad.ratraTiming = currentTime;
                     } else {
-                        return res.status(500).json({ error: "Cannot update timing, it's already set" });
+                        return res.status(400).json({ error: "Cannot update timing, it's already set" });
                     }
                 } else {
                     console.log("new prasad");
@@ -99,7 +98,7 @@ const prasdUpdateDevotee = async (req, res) => {
                 
 
                 // } else {
-                //     return res.status(500).json({ error: "Invalid time for prasad" });
+                //     return res.status(400).json({ error: "Invalid time for prasad" });
                 // }
             }
         } else {
@@ -122,12 +121,12 @@ const prasdUpdateDevotee = async (req, res) => {
            
                 return res.status(200).json({ error: "Prasad recorded successfully" });
             } else {
-                return res.status(500).json({ error: "Invalid time for prasad" });
+                return res.status(400).json({ error: "Invalid time for prasad" });
             }
         }
     } catch (error) {
         console.log("Error: ", error);
-        return res.status(500).json({ error: error });
+        return res.status(400).json({ error: error });
     }
 };
 
