@@ -45,8 +45,9 @@ const prasdUpdateDevotee = async (req, res) => {
         if (!devoteeDetails) throw "No devotee found with this code";
 
         const prasadDetails = await allmodel.prasadModel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
-        const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
-        if (prasadDetails) {
+        
+        if (prasadDetails && prasadDetails!= null) {
+            const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
             // Check if the devotee has already taken prasad for the current date
             // const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
 
@@ -54,42 +55,73 @@ const prasdUpdateDevotee = async (req, res) => {
                 // If all timings are updated, show an error that prasad is already taken for today
                 return res.status(400).json({ message: "Prasad already taken for today" });
             }else {
-                
+
                 // Check if the current time falls within any meal timings
                 const isBalyaTime = await compareThreeTime(currentTime, process.env.balyaStartTime, process.env.balyaEndTime);
-                const isMadhyannaTime = await compareThreeTime(currentTime, process.env.madhyannaStartTime, process.env.madhyannaEndTime);
+                const isMadhyannaTime = await compareThreeTime(currentTime, process.env.madhyanaStartTime, process.env.madhyanaEndTime);
                 const isRatraTime = await compareThreeTime(currentTime, process.env.ratraStartTime, process.env.ratraEndTime);
+              
+                let prasadFound = false;
 
-                if (isBalyaTime || isMadhyannaTime || isRatraTime) {
-                    // Create a new prasad entry for the devotee
-                    const prasadData = {
-                        date: currentDate,
-                        balyaTiming: isBalyaTime ? currentTime : '',
-                        MadhyannaTiming: isMadhyannaTime ? currentTime : '',
-                        ratriTiming: isRatraTime ? currentTime : ''
-                    };
-                    prasadDetails.prasad.push(prasadData);
-                    await prasadDetails.save();
-                    return res.status(200).json({ message: "Prasad recorded successfully" });
+                const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
+
+                if (existingPrasad) {
+                    console.log("prasad exist", existingPrasad);
+                    // Check and prevent updates for balyaTiming if already set
+                    if (isBalyaTime && !existingPrasad.balyaTiming) {
+                        existingPrasad.balyaTiming = currentTime;
+                    } else if (isMadhyannaTime && !existingPrasad.madhyanaTiming) {
+                        existingPrasad.madhyanaTiming = currentTime;
+                    } else if (isRatraTime && !existingPrasad.ratraTiming) {
+                        existingPrasad.ratraTiming = currentTime;
+                    } else {
+                        return res.status(400).json({ message: "Cannot update timing, it's already set" });
+                    }
                 } else {
-                    return res.status(400).json({ message: "Invalid time for prasad" });
+                    console.log("new prasad");
+                    // Create a new prasad object if the currentDate does not exist
+                    let newPrasad = {
+                        date: currentDate,
+                    };
+                    if (isBalyaTime) {
+                        newPrasad.balyaTiming = currentTime;
+                    } else if (isMadhyannaTime) {
+                        newPrasad.madhyanaTiming = currentTime;
+                    } else if (isRatraTime) {
+                        newPrasad.ratraTiming = currentTime;
+                    }
+                    prasadDetails.prasad.push(newPrasad);
                 }
+                
+                await prasadDetails.save();
+                
+                return res.status(200).json({ message: "Prasad recorded successfully" });
+                
+
+                
+
+                // } else {
+                //     return res.status(400).json({ message: "Invalid time for prasad" });
+                // }
             }
         } else {
             // Create a new prasad entry for the devotee
-            const balyaResult = await compareThreeTime(currentTime, process.env.balyaStartTime, process.env.balyaEndTime);
-            const madhyannaResult = await compareThreeTime(currentTime, process.env.madhyanaStartTime, process.env.madhyanaEndTime);
-            const ratraResult = await compareThreeTime(currentTime, process.env.ratraStartTime, process.env.ratraEndTime);
+            const isBalyaTime = await compareThreeTime(currentTime, process.env.balyaStartTime, process.env.balyaEndTime);
+            const isMadhyannaTime = await compareThreeTime(currentTime, process.env.madhyanaStartTime, process.env.madhyanaEndTime);
+            const isRatraTime = await compareThreeTime(currentTime, process.env.ratraStartTime, process.env.ratraEndTime);
             if (isBalyaTime || isMadhyannaTime || isRatraTime) {
                 // Create a new prasad entry for the devotee
                 const prasadData = {
+                    devoteeCode : devoteeDetails.devoteeCode,
+                    devoteeId: devoteeDetails.devoteeId,
+                    prasad: [{
                     date: currentDate,
                     balyaTiming: isBalyaTime ? currentTime : '',
                     madhyanaTiming: isMadhyannaTime ? currentTime : '',
                     ratraTiming: isRatraTime ? currentTime : ''
-                };
-                prasadDetails.prasad.push(prasadData);
-                await prasadDetails.save();
+                }]};
+               await allmodel.prasadModel.create(prasadData);
+           
                 return res.status(200).json({ message: "Prasad recorded successfully" });
             } else {
                 return res.status(400).json({ message: "Invalid time for prasad" });
