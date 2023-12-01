@@ -48,12 +48,10 @@ const prasdUpdateDevotee = async (req, res) => {
         
         if (prasadDetails && prasadDetails!= null) {
             const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
-            // Check if the devotee has already taken prasad for the current date
-            // const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
 
             if (existingPrasad && existingPrasad.balyaTiming && existingPrasad.MadhyannaTiming && existingPrasad.ratriTiming) {
                 // If all timings are updated, show an error that prasad is already taken for today
-                return res.status(400).json({ message: "Prasad already taken for today" });
+                return res.status(500).json({ message: "Prasad already taken for today" });
             }else {
 
                 // Check if the current time falls within any meal timings
@@ -75,7 +73,7 @@ const prasdUpdateDevotee = async (req, res) => {
                     } else if (isRatraTime && !existingPrasad.ratraTiming) {
                         existingPrasad.ratraTiming = currentTime;
                     } else {
-                        return res.status(400).json({ message: "Cannot update timing, it's already set" });
+                        return res.status(500).json({ message: "Cannot update timing, it's already set" });
                     }
                 } else {
                     console.log("new prasad");
@@ -101,7 +99,7 @@ const prasdUpdateDevotee = async (req, res) => {
                 
 
                 // } else {
-                //     return res.status(400).json({ message: "Invalid time for prasad" });
+                //     return res.status(500).json({ message: "Invalid time for prasad" });
                 // }
             }
         } else {
@@ -124,7 +122,7 @@ const prasdUpdateDevotee = async (req, res) => {
            
                 return res.status(200).json({ message: "Prasad recorded successfully" });
             } else {
-                return res.status(400).json({ message: "Invalid time for prasad" });
+                return res.status(500).json({ message: "Invalid time for prasad" });
             }
         }
     } catch (error) {
