@@ -32,51 +32,82 @@ const getPrasadUpdate =  async() => {
     const currentDate = moment.tz("Asia/Kolkata").format("YYYY-MM-DD");
     const currentTime = moment.tz("Asia/Kolkata").format("HH:mm");
 
-    
-}
 
-//Add prasd from barcode api
-const prasdUpdatedevotee = async (req,res) => {
-    const currentDate = moment.tz("Asia/Kolkata").format("YYYY-MM-DD");
-    const currentTime = moment.tz("Asia/Kolkata").format("HH:mm");
-try {
-    //order time should be between start time and end time of meal
-compareThreetime : (orderTime, mealStartTime, mealEndTime) => {
-    const orderTimestamp = new Date(`1970-01-01T${orderTime}:00Z`).getTime();
-      const mealStartTimestamp = new Date(`1970-01-01T${mealStartTime}:00Z`).getTime();
-      const mealEndTimestamp = new Date(`1970-01-01T${mealEndTime}:00Z`).getTime();
-      return orderTimestamp >= mealStartTimestamp && orderTimestamp <= mealEndTimestamp;
-  };
-    let devoteeDetails = await allmodel.devoteemodel.findOne({devoteeCode: parseInt(req.params.code, 10)});
-    if(!devoteeDetails) throw "No devotee found on this code";
-    let prasaddetails = await allmodel.prasadModel.findOne({devoteeCode: parseInt(req.params.code, 10)});
-    if (devoteeDetails && prasaddetails) {
-       let prasadData = prasaddetails.prasad.forEach(prasad => {
-        if(prasad.date == currentDate){
-            console.log(currentDate);
-        }else{
-            console.log("outOfDate");
+
+}
+const prasdUpdateDevotee = async (req, res) => {
+    let data = req.body;
+    const currentDate = data.date;
+    const currentTime = data.time;
+
+    try {
+        const devoteeDetails = await allmodel.devoteemodel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
+        if (!devoteeDetails) throw "No devotee found with this code";
+
+        const prasadDetails = await allmodel.prasadModel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
+        const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
+        if (prasadDetails) {
+            // Check if the devotee has already taken prasad for the current date
+            // const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
+
+            if (existingPrasad && existingPrasad.balyaTiming && existingPrasad.MadhyannaTiming && existingPrasad.ratriTiming) {
+                // If all timings are updated, show an error that prasad is already taken for today
+                return res.status(400).json({ message: "Prasad already taken for today" });
+            }else {
+                
+                // Check if the current time falls within any meal timings
+                const isBalyaTime = await compareThreeTime(currentTime, process.env.balyaStartTime, process.env.balyaEndTime);
+                const isMadhyannaTime = await compareThreeTime(currentTime, process.env.madhyannaStartTime, process.env.madhyannaEndTime);
+                const isRatraTime = await compareThreeTime(currentTime, process.env.ratraStartTime, process.env.ratraEndTime);
+
+                if (isBalyaTime || isMadhyannaTime || isRatraTime) {
+                    // Create a new prasad entry for the devotee
+                    const prasadData = {
+                        date: currentDate,
+                        balyaTiming: isBalyaTime ? currentTime : '',
+                        MadhyannaTiming: isMadhyannaTime ? currentTime : '',
+                        ratriTiming: isRatraTime ? currentTime : ''
+                    };
+                    prasadDetails.prasad.push(prasadData);
+                    await prasadDetails.save();
+                    return res.status(200).json({ message: "Prasad recorded successfully" });
+                } else {
+                    return res.status(400).json({ message: "Invalid time for prasad" });
+                }
+            }
+        } else {
+            // Create a new prasad entry for the devotee
+            const balyaResult = await compareThreeTime(currentTime, process.env.balyaStartTime, process.env.balyaEndTime);
+            const madhyannaResult = await compareThreeTime(currentTime, process.env.madhyanaStartTime, process.env.madhyanaEndTime);
+            const ratraResult = await compareThreeTime(currentTime, process.env.ratraStartTime, process.env.ratraEndTime);
+            if (isBalyaTime || isMadhyannaTime || isRatraTime) {
+                // Create a new prasad entry for the devotee
+                const prasadData = {
+                    date: currentDate,
+                    balyaTiming: isBalyaTime ? currentTime : '',
+                    madhyanaTiming: isMadhyannaTime ? currentTime : '',
+                    ratraTiming: isRatraTime ? currentTime : ''
+                };
+                prasadDetails.prasad.push(prasadData);
+                await prasadDetails.save();
+                return res.status(200).json({ message: "Prasad recorded successfully" });
+            } else {
+                return res.status(400).json({ message: "Invalid time for prasad" });
+            }
         }
-       });
-    } else {
-      let result = compareThreetime(currentTime, process.env.balyaStartTime,process.env.balyaEndTime)
-        let data = {
-            devoteeId : devoteeDetails.devoteeId,
-            devoteeCode : devoteeDetails.devoteeCode,
-            prasad : [{
-                date: currentDate,
-                balyaTiming: currentTime
-        }]};
-        await allmodel.prasadModel.create(data);
+    } catch (error) {
+        console.log("Error: ", error);
+        return res.status(500).json({ error: error });
     }
-console.log(devoteeDetails);
-res.status(200).json({devoteeDetails})
-} catch (error) {
-    console.log("error: -",e);
-    res.status(500).json({"error - ": error})
+};
+
+async function compareThreeTime(orderTime, mealStartTime, mealEndTime) {
+    const orderTimestamp = new Date(`1970-01-01T${orderTime}:00Z`).getTime();
+    const mealStartTimestamp = new Date(`1970-01-01T${mealStartTime}:00Z`).getTime();
+    const mealEndTimestamp = new Date(`1970-01-01T${mealEndTime}:00Z`).getTime();
+    return orderTimestamp >= mealStartTimestamp && orderTimestamp <= mealEndTimestamp;
 }
 
-};
 
 
 const createRelativeDevotee = async (req, res) => {
@@ -276,5 +307,5 @@ module.exports = {
     searchDevotee,
     createRelativeDevotee,
     admin_devoteeDashboard,
-    prasdUpdatedevotee
+    prasdUpdateDevotee
 }

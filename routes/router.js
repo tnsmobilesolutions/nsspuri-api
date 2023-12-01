@@ -52,8 +52,8 @@ getRequest("/devotee/search", devoteeController.searchDevotee);
 router.get("/login/:uid", devoteeController.devoteeLogin);
 deleteRequest("/devotee/:id", devoteeController.devotee_delete);
 getRequest("/admin/dashboard", devoteeController.admin_devoteeDashboard);
-putRequest("/prasadUpdate/:code", devoteeController.prasdUpdatedevotee);
-getRequest("/getPrasad/:code", devoteeController.prasdUpdatedevotee);
+putRequest("/prasadUpdate/:code", devoteeController.prasdUpdateDevotee);
+// getRequest("/getPrasad/:code", devoteeController.prasdUpdatedevotee);
 
 
 // Sammilani Delegate Route

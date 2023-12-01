@@ -8,8 +8,8 @@ let prasdSchema = mongoose.Schema({
     prasad :[{
         date: String,
         balyaTiming: String,
-        MadhyannaTiming: String,
-        ratriTiming: String,
+        madhyanaTiming: String,
+        ratraTiming: String,
     }]
 },{
     timestamps : true
