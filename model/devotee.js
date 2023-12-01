@@ -19,7 +19,7 @@ const devoteeSchema = new mongoose.Schema({
     householdMembersCount: Number,
     devoteeId: { type: String, unique: true, required: true },
     devoteeCode: { type: Number, unique: true, required: true },
-    isAllowedToScanPrasad: Boolean,
+    isAllowedToScanPrasad: { type: Boolean, default: false },
     uid: String,
     createdById: String,
     updatedById: String,
