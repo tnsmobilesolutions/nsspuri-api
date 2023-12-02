@@ -5,6 +5,7 @@ const allmodel = require("../model/allmodel");
 const e = require("express");
 const { model } = require("mongoose");
 const dotenv = require("dotenv").config();
+const messages = require("./messages/message")
 
 
 
@@ -42,7 +43,7 @@ const prasdUpdateDevotee = async (req, res) => {
 
     try {
         const devoteeDetails = await allmodel.devoteemodel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
-        if (!devoteeDetails) throw "No devotee found with this code";
+        if (!devoteeDetails) throw messages.NO_DEVOTEEFOUND;
 
         const prasadDetails = await allmodel.prasadModel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
         
@@ -51,7 +52,7 @@ const prasdUpdateDevotee = async (req, res) => {
 
             if (existingPrasad && existingPrasad.balyaTiming && existingPrasad.MadhyannaTiming && existingPrasad.ratriTiming) {
                 // If all timings are updated, show an error that prasad is already taken for today
-                return res.status(400).json({ error: "Prasad already taken for today" });
+                return res.status(400).json({ error: messages.PRASAD_TAKEN });
             }else {
 
                 // Check if the current time falls within any meal timings
@@ -72,7 +73,7 @@ const prasdUpdateDevotee = async (req, res) => {
                     } else if (isRatraTime && !existingPrasad.ratraTiming) {
                         existingPrasad.ratraTiming = currentTime;
                     } else {
-                        return res.status(400).json({ error: "Cannot update timing, it's already set" });
+                        return res.status(400).json({ error: messages.PRASAD_TAKEN });
                     }
                 } else {
                     console.log("new prasad");
@@ -111,7 +112,7 @@ const prasdUpdateDevotee = async (req, res) => {
                 }]};
                await allmodel.prasadModel.create(prasadData);
            
-                return res.status(200).json({ error: "Prasad recorded successfully" });
+                return res.status(200).json({ error: "Prasad Verified successfully" });
             } else {
                 return res.status(400).json({ error: "Invalid time for prasad" });
             }
@@ -273,7 +274,7 @@ async function devoteeList(status) {
 
         let data = [
             {
-                message: "Total Regesterd Devotee",
+                message: "ପଞ୍ଜିକୃତ ଭକ୍ତଙ୍କ",
                 status: "allDevotee",
                 count: allDevotee.length,
             },
