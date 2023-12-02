@@ -20,6 +20,9 @@ const devoteeSchema = new mongoose.Schema({
     devoteeId: { type: String, unique: true, required: true },
     devoteeCode: { type: Number, unique: true, required: true },
     isAllowedToScanPrasad: { type: Boolean, default: false },
+    isGuest: { type: Boolean, default: false },
+    isSpeciallyAbled: { type: Boolean, default: false },
+    isOrganizer: { type: Boolean, default: false },
     uid: String,
     createdById: String,
     updatedById: String,
@@ -39,5 +42,5 @@ const devoteeSchema = new mongoose.Schema({
 
 module.exports = mongoose.model("devotee", devoteeSchema);
 
-    // status: String, //dataSubbmited/paid/rejected/accepted/printed/withdrawn/lost/reissued
+    // status: String, //dataSubbmited/paid/rejected/accepted/printed/withdrawn/lost/reissued/blacklisted
   
