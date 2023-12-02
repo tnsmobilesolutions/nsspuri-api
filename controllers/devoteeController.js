@@ -298,21 +298,21 @@ async function devoteeList(status) {
                 status: "printed",
                 count: await devoteeList("printed")
             },
-            {
-                message: "Delegate withdrawn",
-                status : "withdrawn",
-                count: await devoteeList("withdrawn")
-            },
+            // {
+            //     message: "Delegate withdrawn",
+            //     status : "withdrawn",
+            //     count: await devoteeList("withdrawn")
+            // },
             {
                 message: "Delegate lost",
                 status: "lost",
                 count: await devoteeList("lost")
             },
-            {
-                message: "Delegate reissued",
-                status : "reissued",
-                count: await devoteeList("reissued")
-            }
+            // {
+            //     message: "Delegate reissued",
+            //     status : "reissued",
+            //     count: await devoteeList("reissued")
+            // }
         ]
         res.status(200).json(data)
     } catch (error) {
