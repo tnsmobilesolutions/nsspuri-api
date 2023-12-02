@@ -13,13 +13,13 @@ const messages = require("./messages/message")
 const devotee_create = async (req, res) => {
     try {
         let data = req.body;
-        let alldevotee = await devotee.find();
-        if(alldevotee.length == 0){
-            data.devoteeCode = 100000
-        }
-        let findLastdevoteeCode =await devotee.find().sort({devoteeCode : -1}).limit(1);
-        if(alldevotee.length != 0 && findLastdevoteeCode.length != 0){
+        let findLastdevoteeCode =await devotee.find({}).sort({devoteeCode : -1}).limit(1);
+        console.log(findLastdevoteeCode);
+        console.log("findLastdevoteeCode --- ",findLastdevoteeCode)
+        if(findLastdevoteeCode.length != 0){
             data.devoteeCode = findLastdevoteeCode[0].devoteeCode + 1
+        }else{
+            data.devoteeCode = 100000
         }
         data.createdById = data.devoteeId;
         data.createdOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
