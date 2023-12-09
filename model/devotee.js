@@ -13,6 +13,7 @@ const devoteeSchema = new mongoose.Schema({
     profilePhotoUrl: String,
     isKYDVerified: { type: Boolean, default: false },
     hasGruhasana: String,
+    hasParichayaPatra: { type: Boolean, default: false },
     isApproved: { type: Boolean, default: false },
     isAdmin: { type: Boolean, default: false },
     isGruhasanaApproved: { type: Boolean, default: false },
