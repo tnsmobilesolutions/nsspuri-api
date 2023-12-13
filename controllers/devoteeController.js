@@ -248,9 +248,9 @@ const devotee_update = async (req, res) => {
         let currentDevotee = await devotee.findOne({devoteeId : req.user.devoteeId})
 let data = req.body;
 data.updatedbyId = currentDevotee.devoteeId;
-data.devoteeCode = currentDevotee.devoteeCode;
-data.isAllowedToScanPrasad = currentDevotee.isAllowedToScanPrasad
-data.isAdmin = currentDevotee.isAdmin
+// data.devoteeCode = data.devoteeCode;
+// data.isAllowedToScanPrasad = currentDevotee.isAllowedToScanPrasad
+// data.isAdmin = currentDevotee.isAdmin
 data.updatedOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
 
         const updateDevotee = await devotee.findOneAndUpdate({devoteeId:req.params.id}, {$set:data})
