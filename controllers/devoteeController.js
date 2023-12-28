@@ -201,13 +201,13 @@ const devotee_details_by_devoteeId = async (req, res) => {
     try {
        
         const singleDevotee = await devotee.find({devoteeId:req.params.id})
-        for (let i = 0; i < singleDevotee.length; i++) {
-            const createdByDevotee = await devotee.findOne({ devoteeId: singleDevotee[i].createdById });
-            if (createdByDevotee) {
-                singleDevotee[i].createdById = createdByDevotee.name;
-                // delete singleDevotee[i].createdById; // Remove the createdById field
-            }
-        }
+        // for (let i = 0; i < singleDevotee.length; i++) {
+        //     const createdByDevotee = await devotee.findOne({ devoteeId: singleDevotee[i].createdById });
+        //     if (createdByDevotee) {
+        //         singleDevotee[i].createdById = createdByDevotee.name;
+        //         // delete singleDevotee[i].createdById; // Remove the createdById field
+        //     }
+        // }
         res.status(200).json({singleDevotee})
     } catch (error) {
         console.log(error);
@@ -219,13 +219,13 @@ const devotee_details_by_devoteeId = async (req, res) => {
 const devotee_with_relatives = async (req, res) => {
     try {
         const singleDevotee = await devotee.find({createdById: req.user.devoteeId})
-        for (let i = 0; i < singleDevotee.length; i++) {
-            const createdByDevotee = await devotee.findOne({ devoteeId: singleDevotee[i].createdById });
-            if (createdByDevotee) {
-                singleDevotee[i].createdById = createdByDevotee.name;
-                // delete singleDevotee[i].createdById; // Remove the createdById field
-            }
-        }
+        // for (let i = 0; i < singleDevotee.length; i++) {
+        //     const createdByDevotee = await devotee.findOne({ devoteeId: singleDevotee[i].createdById });
+        //     if (createdByDevotee) {
+        //         singleDevotee[i].createdById = createdByDevotee.name;
+        //         // delete singleDevotee[i].createdById; // Remove the createdById field
+        //     }
+        // }
         res.status(200).json({singleDevotee})
     } catch (error) {
         console.log(error);
