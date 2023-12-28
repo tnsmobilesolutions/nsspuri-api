@@ -166,6 +166,13 @@ const devotee_all = async (req, res) => {
         } else {
         allDevotee = await devotee.find().sort({name:1})
         }
+        for (let i = 0; i < allDevotee.length; i++) {
+            const createdByDevotee = await devotee.findOne({ devoteeId: allDevotee[i].createdById });
+            if (createdByDevotee) {
+                allDevotee[i].createdById = createdByDevotee.name;
+                // delete allDevotee[i].createdById; // Remove the createdById field
+            }
+        }
         res.status(200).json({allDevotee})
     } catch (error) {
         console.log(error);
@@ -177,6 +184,13 @@ const devotee_all = async (req, res) => {
 const devotee_details = async (req, res) => {
     try {
         const singleDevotee = await devotee.find({devoteeId:req.user.devoteeId})
+        for (let i = 0; i < singleDevotee.length; i++) {
+            const createdByDevotee = await devotee.findOne({ devoteeId: singleDevotee[i].createdById });
+            if (createdByDevotee) {
+                singleDevotee[i].createdById = createdByDevotee.name;
+                // delete singleDevotee[i].createdById; // Remove the createdById field
+            }
+        }
         res.status(200).json({singleDevotee})
     } catch (error) {
         console.log(error);
@@ -185,7 +199,15 @@ const devotee_details = async (req, res) => {
 };
 const devotee_details_by_devoteeId = async (req, res) => {
     try {
+       
         const singleDevotee = await devotee.find({devoteeId:req.params.id})
+        for (let i = 0; i < singleDevotee.length; i++) {
+            const createdByDevotee = await devotee.findOne({ devoteeId: singleDevotee[i].createdById });
+            if (createdByDevotee) {
+                singleDevotee[i].createdById = createdByDevotee.name;
+                // delete singleDevotee[i].createdById; // Remove the createdById field
+            }
+        }
         res.status(200).json({singleDevotee})
     } catch (error) {
         console.log(error);
@@ -197,6 +219,13 @@ const devotee_details_by_devoteeId = async (req, res) => {
 const devotee_with_relatives = async (req, res) => {
     try {
         const singleDevotee = await devotee.find({createdById: req.user.devoteeId})
+        for (let i = 0; i < singleDevotee.length; i++) {
+            const createdByDevotee = await devotee.findOne({ devoteeId: singleDevotee[i].createdById });
+            if (createdByDevotee) {
+                singleDevotee[i].createdById = createdByDevotee.name;
+                // delete singleDevotee[i].createdById; // Remove the createdById field
+            }
+        }
         res.status(200).json({singleDevotee})
     } catch (error) {
         console.log(error);
@@ -215,6 +244,13 @@ const searchDevotee = async (req, res) => {
         }
         if(req.query.status && req.query.devoteeName){
             searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } })
+        }
+        for (let i = 0; i < searchDevotee.length; i++) {
+            const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
+            if (createdByDevotee) {
+                searchDevotee[i].createdById = createdByDevotee.name;
+                // delete allDevotee[i].createdById; // Remove the createdById field
+            }
         }
        
         res.status(200).json({searchDevotee})
@@ -248,9 +284,6 @@ const devotee_update = async (req, res) => {
         let currentDevotee = await devotee.findOne({devoteeId : req.user.devoteeId})
 let data = req.body;
 data.updatedbyId = currentDevotee.devoteeId;
-// data.devoteeCode = data.devoteeCode;
-// data.isAllowedToScanPrasad = currentDevotee.isAllowedToScanPrasad
-// data.isAdmin = currentDevotee.isAdmin
 data.updatedOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
 
         const updateDevotee = await devotee.findOneAndUpdate({devoteeId:req.params.id}, {$set:data})
