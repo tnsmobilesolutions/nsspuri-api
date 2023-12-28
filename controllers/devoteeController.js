@@ -165,6 +165,13 @@ const devotee_all = async (req, res) => {
             allDevotee = await devotee.find({sangha:{ "$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({name:1})
         } else {
         allDevotee = await devotee.find().sort({name:1})
+        for (let i = 0; i < allDevotee.length; i++) {
+            const createdByDevotee = await devotee.findOne({ devoteeId: allDevotee[i].createdById });
+            if (createdByDevotee) {
+                allDevotee[i].createdById = createdByDevotee.name;
+                // delete allDevotee[i].createdById; // Remove the createdById field
+            }
+        }
         }
         res.status(200).json({allDevotee})
     } catch (error) {
@@ -248,9 +255,6 @@ const devotee_update = async (req, res) => {
         let currentDevotee = await devotee.findOne({devoteeId : req.user.devoteeId})
 let data = req.body;
 data.updatedbyId = currentDevotee.devoteeId;
-// data.devoteeCode = currentDevotee.devoteeCode;
-// data.isAllowedToScanPrasad = currentDevotee.isAllowedToScanPrasad
-// data.isAdmin = currentDevotee.isAdmin
 data.updatedOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
 
         const updateDevotee = await devotee.findOneAndUpdate({devoteeId:req.params.id}, {$set:data})
