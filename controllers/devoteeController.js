@@ -282,7 +282,13 @@ if(req.query.sangha){
 }else if(req.query.name){
     searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' }})
 }
-
+for (let i = 0; i < searchDevotee.length; i++) {
+    const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
+    if (createdByDevotee) {
+        searchDevotee[i].createdById = createdByDevotee.name;
+        // delete allDevotee[i].createdById; // Remove the createdById field
+    }
+}
 
 
     //   let advanceSearch = await devotee.find({})
