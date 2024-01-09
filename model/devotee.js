@@ -4,6 +4,7 @@ const devoteeSchema = new mongoose.Schema({
     name: { type: String,},
     mobileNumber: { type: String},
     emailId: { type: String},
+    role: { type: String,default: "user"},
     dob: String,
     bloodGroup: String,
     gender: String,

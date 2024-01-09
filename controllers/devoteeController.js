@@ -166,9 +166,9 @@ const devotee_all = async (req, res) => {
     try {
         let allDevotee = []
         if (req.query.sangha) {
-            allDevotee = await devotee.find({sangha:{ "$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({name:1})
+            allDevotee = await devotee.find({sangha:{ "$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({devoteeCode:1})
         } else {
-        allDevotee = await devotee.find().sort({name:1})
+        allDevotee = await devotee.find().sort({devoteeCode:1})
         }
         for (let i = 0; i < allDevotee.length; i++) {
             const createdByDevotee = await devotee.findOne({ devoteeId: allDevotee[i].createdById });
