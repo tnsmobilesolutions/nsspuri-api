@@ -4,7 +4,7 @@ const devoteeSchema = new mongoose.Schema({
     name: { type: String,},
     mobileNumber: { type: String},
     emailId: { type: String},
-    role: { type: String,default: "user"},
+    role: { type: String,default: "User"},
     dob: String,
     bloodGroup: String,
     gender: String,
@@ -45,5 +45,5 @@ const devoteeSchema = new mongoose.Schema({
 module.exports = mongoose.model("devotee", devoteeSchema);
 
     // status: String, //dataSubbmited/paid/rejected/accepted/printed/withdrawn/lost/reissued/blacklisted
-    //role: SuperAdmin,Admin,Approver,PrasadScanner,SecurityCheck
+    //role: SuperAdmin,Admin,Approver,PrasadScanner,SecurityCheck,user
   
