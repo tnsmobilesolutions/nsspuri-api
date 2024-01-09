@@ -45,4 +45,5 @@ const devoteeSchema = new mongoose.Schema({
 module.exports = mongoose.model("devotee", devoteeSchema);
 
     // status: String, //dataSubbmited/paid/rejected/accepted/printed/withdrawn/lost/reissued/blacklisted
+    //role: SuperAdmin,Admin,Approver,PrasadScanner,SecurityCheck
   
