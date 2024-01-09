@@ -281,6 +281,10 @@ if(req.query.sangha){
     searchDevotee = await devotee.find({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' }})
 }else if(req.query.name){
     searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' }})
+}else if(req.query.devoteeCode){
+    searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeCode}`, '$options': 'i' }})
+}else if(req.query.status){
+    searchDevotee = await devotee.find({name: {"$regex": `${req.query.status}`, '$options': 'i' }})
 }
 for (let i = 0; i < searchDevotee.length; i++) {
     const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
