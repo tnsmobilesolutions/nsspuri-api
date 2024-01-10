@@ -268,23 +268,23 @@ const advanceSearchDevotee = async (req, res) => {
     let searchDevotee;
     try {
 if(req.query.sangha){
-    searchDevotee = await devotee.find({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' }});
+    searchDevotee = await devotee.find({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({devoteeCode:1});
 }else if(req.query.status){
-    searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }})
+    searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:1})
 }else if(req.query.bloodGroup){
-    searchDevotee = await devotee.find({bloodGroup: req.query.bloodGroup})
+    searchDevotee = await devotee.find({bloodGroup: req.query.bloodGroup}).sort({devoteeCode:1})
 }else if(req.query.gender){
-    searchDevotee = await devotee.find({gender: req.query.gender })
+    searchDevotee = await devotee.find({gender: req.query.gender }).sort({devoteeCode:1})
 }else if(req.query.mobileNumber){
-    searchDevotee = await devotee.find({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' }})
+    searchDevotee = await devotee.find({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' }}).sort({devoteeCode:1})
 }else if(req.query.emailId){
-    searchDevotee = await devotee.find({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' }})
+    searchDevotee = await devotee.find({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' }}).sort({devoteeCode:1})
 }else if(req.query.name){
-    searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' }})
+    searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' }}).sort({devoteeCode:1})
 }else if(req.query.devoteeCode){
-    searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeCode}`, '$options': 'i' }})
+    searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeCode}`, '$options': 'i' }}).sort({devoteeCode:1})
 }else if(req.query.status){
-    searchDevotee = await devotee.find({name: {"$regex": `${req.query.status}`, '$options': 'i' }})
+    searchDevotee = await devotee.find({name: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:1})
 }
 for (let i = 0; i < searchDevotee.length; i++) {
     const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
@@ -334,6 +334,9 @@ const devotee_update = async (req, res) => {
     try {
         let currentDevotee = await devotee.findOne({devoteeId : req.user.devoteeId})
 let data = req.body;
+if(data.status == "Accepted"){
+    data.approvedBy = currentDevotee.devoteeId;
+}
 data.updatedbyId = currentDevotee.devoteeId;
 data.updatedOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
 
@@ -386,7 +389,9 @@ async function countDevoteePrasadtaken(desiredDate, timingKey) {
       return devoteeprasadTakenCount;
 }
        let allDevotee = await devotee.find().sort({name:1})
-
+       let currentDevotee = await devotee.findById(req.user._id)
+console.log("cureentDevotee --",currentDevotee)
+currentDevotee.role == "Admin" || currentDevotee.role == "SuperAdmin" 
         let data = [
             {
                 title: "",
