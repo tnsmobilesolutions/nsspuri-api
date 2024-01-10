@@ -525,6 +525,13 @@ if (currentDevotee.role == "Admin" || currentDevotee.role == "SuperAdmin"){
         },
         {
             title: "",
+            message: "ରଦ୍ଦ ହୋଇଥିବା ପ୍ରବେଶ ପତ୍ର",
+            translate: "Blacklisted devotee",
+            status: "blacklisted",
+            count: await devoteeList("rejected"),
+        },
+        {
+            title: "",
             message: "ହଜିଯାଇଥିବା ପ୍ରବେଶ ପତ୍ର",
             translate: "Lost delegate card",
             status: "lost",
