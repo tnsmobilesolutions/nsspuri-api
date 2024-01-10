@@ -390,9 +390,9 @@ async function countDevoteePrasadtaken(desiredDate, timingKey) {
 }
        let allDevotee = await devotee.find().sort({name:1})
        let currentDevotee = await devotee.findById(req.user._id)
-console.log("cureentDevotee --",currentDevotee)
-currentDevotee.role == "Admin" || currentDevotee.role == "SuperAdmin" 
-        let data = [
+let data;
+if (currentDevotee.role == "Admin" || currentDevotee.role == "SuperAdmin"){
+  data = [
             {
                 title: "",
                 message: "ପଞ୍ଜିକୃତ ଭକ୍ତଙ୍କ ସଂଖ୍ୟା",
@@ -427,6 +427,20 @@ currentDevotee.role == "Admin" || currentDevotee.role == "SuperAdmin"
                 translate: "Lost delegate card",
                 status: "lost",
                 count: await devoteeList("lost")
+            },
+            {
+                title: "",
+                message: "",
+                translate: "Data Submitted",
+                status: "dataSubmitted",
+                count: await devoteeList("dataSubmitted")
+            },
+            {
+                title: "",
+                message: "",
+                translate: "Approved Devotee",
+                status: "Approved",
+                count: await devoteeList("approved")
             },
             {
                 title: moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),
@@ -493,6 +507,33 @@ currentDevotee.role == "Admin" || currentDevotee.role == "SuperAdmin"
             },       
             
         ]
+}else{
+    data = [
+        {
+            title: "",
+            message: "",
+            translate: "Data Submitted",
+            status: "dataSubmitted",
+            count: await devoteeList("dataSubmitted")
+        },
+        {
+            title: "",
+            message: "",
+            translate: "Approved Devotee",
+            status: "Approved",
+            count: await devoteeList("approved")
+        },
+        {
+            title: "",
+            message: "ହଜିଯାଇଥିବା ପ୍ରବେଶ ପତ୍ର",
+            translate: "Lost delegate card",
+            status: "lost",
+            count: await devoteeList("lost")
+        },
+    ]
+}
+       
+
         res.status(200).json(data)
     } catch (error) {
         console.log(error);
