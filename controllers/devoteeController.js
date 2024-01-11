@@ -267,36 +267,49 @@ const searchDevotee = async (req, res) => {
 const advanceSearchDevotee = async (req, res) => {
     let searchDevotee;
     try {
-if(req.query.sangha){
-    searchDevotee = await devotee.find({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({devoteeCode:1});
-}else if(req.query.status){
-    searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:1})
-}else if(req.query.bloodGroup){
-    searchDevotee = await devotee.find({bloodGroup: req.query.bloodGroup}).sort({devoteeCode:1})
-}else if(req.query.gender){
-    searchDevotee = await devotee.find({gender: req.query.gender }).sort({devoteeCode:1})
-}else if(req.query.mobileNumber){
-    searchDevotee = await devotee.find({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' }}).sort({devoteeCode:1})
-}else if(req.query.emailId){
-    searchDevotee = await devotee.find({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' }}).sort({devoteeCode:1})
-}else if(req.query.name){
-    searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' }}).sort({devoteeCode:1})
-}else if(req.query.devoteeCode){
-    searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeCode}`, '$options': 'i' }}).sort({devoteeCode:1})
-}else if(req.query.status){
-    searchDevotee = await devotee.find({name: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:1})
-}
+        if(req.query.advanceStatus){
+            if(req.query.sangha){
+                searchDevotee = await devotee.find({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:1});
+            }else if(req.query.status){
+                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:1})
+            }else if(req.query.bloodGroup){
+                searchDevotee = await devotee.find({bloodGroup: req.query.bloodGroup,status: req.query.advanceStatus}).sort({devoteeCode:1})
+            }else if(req.query.gender){
+                searchDevotee = await devotee.find({gender: req.query.gender,status: req.query.advanceStatus }).sort({devoteeCode:1})
+            }else if(req.query.mobileNumber){
+                searchDevotee = await devotee.find({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:1})
+            }else if(req.query.emailId){
+                searchDevotee = await devotee.find({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:1})
+            }else if(req.query.name){
+                searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:1})
+            }else if(req.query.devoteeCode){
+                searchDevotee = await devotee.find({devoteeCode: {"$regex": `${req.query.devoteeCode}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:1})
+            }
+        }else{
+            if(req.query.sangha){
+                searchDevotee = await devotee.find({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({devoteeCode:1});
+            }else if(req.query.status){
+                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:1})
+            }else if(req.query.bloodGroup){
+                searchDevotee = await devotee.find({bloodGroup: req.query.bloodGroup}).sort({devoteeCode:1})
+            }else if(req.query.gender){
+                searchDevotee = await devotee.find({gender: req.query.gender }).sort({devoteeCode:1})
+            }else if(req.query.mobileNumber){
+                searchDevotee = await devotee.find({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' }}).sort({devoteeCode:1})
+            }else if(req.query.emailId){
+                searchDevotee = await devotee.find({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' }}).sort({devoteeCode:1})
+            }else if(req.query.name){
+                searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' }}).sort({devoteeCode:1})
+            }else if(req.query.devoteeCode){
+                searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeCode}`, '$options': 'i' }}).sort({devoteeCode:1})
+            }else if(req.query.status){
+                searchDevotee = await devotee.find({name: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:1})
+            }   
+        }
 
 
-if (req.query.advanceStatus) {
-    const filteredDevotees = searchDevotee.filter((devotee) => {
-        return devotee.status == req.query.advanceStatus;
-    });
 
-    // Now you can use or return the filtered data
-    // For example, you can send it as a response if you are working with a web server
-    return filteredDevotees;
-}
+
 for (let i = 0; i < searchDevotee.length; i++) {
     const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
     if (createdByDevotee) {
