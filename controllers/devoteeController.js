@@ -391,7 +391,7 @@ async function countDevoteePrasadtaken(desiredDate, timingKey) {
        let allDevotee = await devotee.find().sort({name:1})
        let currentDevotee = await devotee.findById(req.user._id)
 let data;
-if (currentDevotee.role == "Admin" || currentDevotee.role == "SuperAdmin"){
+
   data = [
             {
                 title: "",
@@ -507,38 +507,7 @@ if (currentDevotee.role == "Admin" || currentDevotee.role == "SuperAdmin"){
             },       
             
         ]
-}else{
-    data = [
-        {
-            title: "",
-            message: "",
-            translate: "Data Submitted",
-            status: "dataSubmitted",
-            count: await devoteeList("dataSubmitted")
-        },
-        {
-            title: "",
-            message: "",
-            translate: "Approved Devotee",
-            status: "Approved",
-            count: await devoteeList("approved")
-        },
-        {
-            title: "",
-            message: "ରଦ୍ଦ ହୋଇଥିବା ପ୍ରବେଶ ପତ୍ର",
-            translate: "Blacklisted devotee",
-            status: "blacklisted",
-            count: await devoteeList("rejected"),
-        },
-        {
-            title: "",
-            message: "ହଜିଯାଇଥିବା ପ୍ରବେଶ ପତ୍ର",
-            translate: "Lost delegate card",
-            status: "lost",
-            count: await devoteeList("lost")
-        },
-    ]
-}
+
        
 
         res.status(200).json(data)
