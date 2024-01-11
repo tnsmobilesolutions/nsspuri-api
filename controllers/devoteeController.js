@@ -286,6 +286,17 @@ if(req.query.sangha){
 }else if(req.query.status){
     searchDevotee = await devotee.find({name: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:1})
 }
+
+
+if (req.query.advanceStatus) {
+    const filteredDevotees = searchDevotee.filter((devotee) => {
+        return devotee.status == req.query.advanceStatus;
+    });
+
+    // Now you can use or return the filtered data
+    // For example, you can send it as a response if you are working with a web server
+    return filteredDevotees;
+}
 for (let i = 0; i < searchDevotee.length; i++) {
     const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
     if (createdByDevotee) {
@@ -396,7 +407,7 @@ let data;
             {
                 title: "",
                 message: "ପଞ୍ଜିକୃତ ଭକ୍ତଙ୍କ ସଂଖ୍ୟା",
-                translate: "All devotee",
+                translate: "All Devotee",
                 status: "allDevotee",
                 count: allDevotee.length,
             },
@@ -410,14 +421,14 @@ let data;
             {
                 title: "",
                 message: "ରଦ୍ଦ ହୋଇଥିବା ପ୍ରବେଶ ପତ୍ର",
-                translate: "Blacklisted devotee",
+                translate: "Blacklisted Devotee",
                 status: "blacklisted",
                 count: await devoteeList("rejected"),
             },
             {
                 title: "",
                 message: "ପ୍ରବେଶ ପତ୍ର ଛପା ସଂଖ୍ୟା",
-                translate: "Printed devotee",
+                translate: "Printed Devotee",
                 status: "printed",
                 count: await devoteeList("printed")
             },
