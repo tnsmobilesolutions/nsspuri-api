@@ -446,8 +446,8 @@ let data;
             {
                 title: "",
                 message: "ପ୍ରବେଶ ପତ୍ର ଛପା ସଂଖ୍ୟା",
-                translate: "Printed",
-                status: "Delegate printed",
+                translate: "Delegate Printed",
+                status: "printed",
                 count: await devoteeList("printed")
             },
             {
