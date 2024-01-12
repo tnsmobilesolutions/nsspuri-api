@@ -4,6 +4,7 @@ const devoteeSchema = new mongoose.Schema({
     name: { type: String,},
     mobileNumber: { type: String},
     emailId: { type: String},
+    role: { type: String,default: "User"},
     dob: String,
     bloodGroup: String,
     gender: String,
@@ -25,8 +26,10 @@ const devoteeSchema = new mongoose.Schema({
     isSpeciallyAbled: { type: Boolean, default: false },
     isOrganizer: { type: Boolean, default: false },
     uid: String,
+    paidAmount: Number,
     createdById: String,
     updatedById: String,
+    approvedBy: String,
     createdOn: { type: String, default: moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A") },
     updatedOn: { type: String, default: moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A") },
     status: { type: String, default: "dataSubmitted"}, 
@@ -43,5 +46,6 @@ const devoteeSchema = new mongoose.Schema({
 
 module.exports = mongoose.model("devotee", devoteeSchema);
 
-    // status: String, //dataSubbmited/paid/rejected/accepted/printed/withdrawn/lost/reissued/blacklisted
+    // status: String, //dataSubmitted/paid/rejected/accepted/printed/withdrawn/lost/reissued/blacklisted
+    //role: SuperAdmin,Admin,Approver,PrasadScanner,SecurityCheck,user
   

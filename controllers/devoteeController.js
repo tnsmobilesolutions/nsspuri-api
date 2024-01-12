@@ -145,11 +145,15 @@ async function compareThreeTime(orderTime, mealStartTime, mealEndTime) {
 const createRelativeDevotee = async (req, res) => {
     try {
         let data = req.body
+        let existdevotee =await devotee.findOne({emailId: data.emailId})
+        if (existdevotee) throw messages.EXISTING_DEVOTEE
+
         let findLastdevoteeCode =await devotee.find({}).sort({devoteeCode : -1}).limit(1);
         console.log("findLastdevoteeCode --- ",findLastdevoteeCode)
         if(findLastdevoteeCode){
             data.devoteeCode = findLastdevoteeCode[0].devoteeCode + 1
         }
+
         data.createdById = req.user.devoteeId
         data.createdOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
         data.updatedOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
@@ -166,9 +170,9 @@ const devotee_all = async (req, res) => {
     try {
         let allDevotee = []
         if (req.query.sangha) {
-            allDevotee = await devotee.find({sangha:{ "$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({name:1})
+            allDevotee = await devotee.find({sangha:{ "$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({devoteeCode:1})
         } else {
-        allDevotee = await devotee.find().sort({name:1})
+        allDevotee = await devotee.find().sort({devoteeCode:1})
         }
         for (let i = 0; i < allDevotee.length; i++) {
             const createdByDevotee = await devotee.findOne({ devoteeId: allDevotee[i].createdById });
@@ -241,19 +245,33 @@ const searchDevotee = async (req, res) => {
     let searchDevotee;
     try {
         if(req.query.status){
-            searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }})
+            if(req.query.status =="dataSubmitted"){
+searchDevotee = await devotee.find({status:{$in:["dataSubmitted","rejected"]}}).sort({devoteeCode:-1})
+            }else{
+                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:-1})
+            }
+            
         }
         if(req.query.devoteeName){
-         searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeName}`, '$options': 'i' }});
+         searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeName}`, '$options': 'i' }}).sort({devoteeCode:-1});
         }
         if(req.query.status && req.query.devoteeName){
-            searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } })
+            searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } }).sort({devoteeCode:-1})
         }
         for (let i = 0; i < searchDevotee.length; i++) {
+            let approvedByDevoteename = "";
             const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
+         if(searchDevotee[i].status== "approved"){
+           let approvedByDevotee = await  devotee.findOne({ devoteeId: searchDevotee[i].approvedBy });
+           if(approvedByDevotee){
+              approvedByDevoteename = approvedByDevotee.name  ?? ""
+           }
+          
+         }
+            
             if (createdByDevotee) {
                 searchDevotee[i].createdById = createdByDevotee.name;
-                // delete allDevotee[i].createdById; // Remove the createdById field
+                searchDevotee[i].approvedBy = approvedByDevoteename
             }
         }
        
@@ -267,28 +285,66 @@ const searchDevotee = async (req, res) => {
 const advanceSearchDevotee = async (req, res) => {
     let searchDevotee;
     try {
-if(req.query.sangha){
-    searchDevotee = await devotee.find({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' }});
-}else if(req.query.status){
-    searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }})
-}else if(req.query.bloodGroup){
-    searchDevotee = await devotee.find({bloodGroup: req.query.bloodGroup})
-}else if(req.query.gender){
-    searchDevotee = await devotee.find({gender: req.query.gender })
-}else if(req.query.mobileNumber){
-    searchDevotee = await devotee.find({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' }})
-}else if(req.query.emailId){
-    searchDevotee = await devotee.find({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' }})
-}else if(req.query.name){
-    searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' }})
-}
-for (let i = 0; i < searchDevotee.length; i++) {
-    const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
-    if (createdByDevotee) {
-        searchDevotee[i].createdById = createdByDevotee.name;
-        // delete allDevotee[i].createdById; // Remove the createdById field
-    }
-}
+        if(req.query.advanceStatus){
+            if(req.query.sangha){
+                searchDevotee = await devotee.find({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1});
+            }else if(req.query.status){
+                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:-1})
+            }else if(req.query.bloodGroup){
+                searchDevotee = await devotee.find({bloodGroup: req.query.bloodGroup,status: req.query.advanceStatus}).sort({devoteeCode:-1})
+            }else if(req.query.gender){
+                searchDevotee = await devotee.find({gender: req.query.gender,status: req.query.advanceStatus }).sort({devoteeCode:-1})
+            }else if(req.query.mobileNumber){
+                searchDevotee = await devotee.find({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1})
+            }else if(req.query.emailId){
+                searchDevotee = await devotee.find({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1})
+            }else if(req.query.name){
+                searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1})
+            }else if(req.query.devoteeCode){
+                searchDevotee = await devotee.find({devoteeCode:req.query.devoteeCode,status: req.query.advanceStatus}).sort({devoteeCode:-1})
+            }
+        }else{
+            if(req.query.sangha){
+                searchDevotee = await devotee.find({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({devoteeCode:1});
+            }else if(req.query.status){
+                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:1})
+            }else if(req.query.bloodGroup){
+                searchDevotee = await devotee.find({bloodGroup: req.query.bloodGroup}).sort({devoteeCode:1})
+            }else if(req.query.gender){
+                searchDevotee = await devotee.find({gender: req.query.gender }).sort({devoteeCode:1})
+            }else if(req.query.mobileNumber){
+                searchDevotee = await devotee.find({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' }}).sort({devoteeCode:1})
+            }else if(req.query.emailId){
+                searchDevotee = await devotee.find({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' }}).sort({devoteeCode:1})
+            }else if(req.query.name){
+                searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' }}).sort({devoteeCode:1})
+            }else if(req.query.devoteeCode){
+                searchDevotee = await devotee.find({devoteeCode: req.query.devoteeCode}).sort({devoteeCode:1})
+            }
+            
+            
+             
+        }
+
+
+
+
+        for (let i = 0; i < searchDevotee.length; i++) {
+            let approvedByDevoteename = "";
+            const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
+         if(searchDevotee[i].status== "approved"){
+           let approvedByDevotee = await  devotee.findOne({ devoteeId: searchDevotee[i].approvedBy });
+           if(approvedByDevotee){
+              approvedByDevoteename = approvedByDevotee.name  ?? ""
+           }
+          
+         }
+            
+            if (createdByDevotee) {
+                searchDevotee[i].createdById = createdByDevotee.name;
+                searchDevotee[i].approvedBy = approvedByDevoteename
+            }
+        }
 
 
     //   let advanceSearch = await devotee.find({})
@@ -330,6 +386,14 @@ const devotee_update = async (req, res) => {
     try {
         let currentDevotee = await devotee.findOne({devoteeId : req.user.devoteeId})
 let data = req.body;
+if(data.status == "approved"){
+    data.approvedBy = currentDevotee.devoteeId;
+}
+let oldDevoteeData = await devotee.findOne({devoteeId: req.params.id});
+if(!oldDevoteeData) throw messages.NO_DEVOTEEFOUND
+if(oldDevoteeData.status == "rejected"){
+    data.status= "dataSubmitted"
+}
 data.updatedbyId = currentDevotee.devoteeId;
 data.updatedOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
 
@@ -356,7 +420,13 @@ const devotee_delete = async (req, res) => {
 const admin_devoteeDashboard = async (req, res) => {
     try {
 async function devoteeList(status) {
-    let statusby = await devotee.find({status: status});
+    let statusby ;
+    if(status == 'dataSubmitted'){
+statusby = await devotee.find({status:{$in:["dataSubmitted","rejected"]}})
+    }else{
+        statusby = await devotee.find({status: status});
+    }
+    
     return statusby.length;
 }
 async function countDevoteePrasadtaken(desiredDate, timingKey) {
@@ -382,14 +452,30 @@ async function countDevoteePrasadtaken(desiredDate, timingKey) {
       return devoteeprasadTakenCount;
 }
        let allDevotee = await devotee.find().sort({name:1})
+       let currentDevotee = await devotee.findById(req.user._id)
+let data;
 
-        let data = [
+  data = [
             {
                 title: "",
                 message: "ପଞ୍ଜିକୃତ ଭକ୍ତଙ୍କ ସଂଖ୍ୟା",
-                translate: "All devotee",
+                translate: "All Devotee",
                 status: "allDevotee",
                 count: allDevotee.length,
+            },
+            {
+                title: "",
+                message: "ନିବେଦନକାରୀ ପ୍ରବେଶପତ୍ର",
+                translate: "Delegate Submitted / rejected",
+                status: "dataSubmitted",
+                count: await devoteeList("dataSubmitted")
+            },
+            {
+                title: "",
+                message: "ଗ୍ରହୀତ ପ୍ରବେଶପତ୍ର",
+                translate: "Delegate Approved",
+                status: "Approved",
+                count: await devoteeList("approved")
             },
             {
                 title: "",
@@ -400,18 +486,19 @@ async function countDevoteePrasadtaken(desiredDate, timingKey) {
             },
             {
                 title: "",
-                message: "ରଦ୍ଦ ହୋଇଥିବା ପ୍ରବେଶ ପତ୍ର",
-                translate: "Blacklisted devotee",
-                status: "blacklisted",
-                count: await devoteeList("rejected"),
-            },
-            {
-                title: "",
                 message: "ପ୍ରବେଶ ପତ୍ର ଛପା ସଂଖ୍ୟା",
-                translate: "Printed devotee",
+                translate: "Delegate Printed",
                 status: "printed",
                 count: await devoteeList("printed")
             },
+            {
+                title: "",
+                message: "ରଦ୍ଦ ହୋଇଥିବା ପ୍ରବେଶ ପତ୍ର",
+                translate: "Blacklisted Delegate",
+                status: "blacklisted",
+                count: await devoteeList("rejected"),
+            },
+           
             {
                 title: "",
                 message: "ହଜିଯାଇଥିବା ପ୍ରବେଶ ପତ୍ର",
@@ -419,6 +506,8 @@ async function countDevoteePrasadtaken(desiredDate, timingKey) {
                 status: "lost",
                 count: await devoteeList("lost")
             },
+          
+          
             {
                 title: moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),
                 message: "ବାଲ୍ୟ",
@@ -484,6 +573,9 @@ async function countDevoteePrasadtaken(desiredDate, timingKey) {
             },       
             
         ]
+
+       
+
         res.status(200).json(data)
     } catch (error) {
         console.log(error);
