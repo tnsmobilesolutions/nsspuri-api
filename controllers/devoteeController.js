@@ -145,11 +145,15 @@ async function compareThreeTime(orderTime, mealStartTime, mealEndTime) {
 const createRelativeDevotee = async (req, res) => {
     try {
         let data = req.body
+        let existdevotee =await devotee.findOne({emailId: data.emailId})
+        if (existdevotee) throw messages.EXISTING_DEVOTEE
+
         let findLastdevoteeCode =await devotee.find({}).sort({devoteeCode : -1}).limit(1);
         console.log("findLastdevoteeCode --- ",findLastdevoteeCode)
         if(findLastdevoteeCode){
             data.devoteeCode = findLastdevoteeCode[0].devoteeCode + 1
         }
+
         data.createdById = req.user.devoteeId
         data.createdOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
         data.updatedOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
@@ -442,8 +446,8 @@ let data;
             {
                 title: "",
                 message: "ପ୍ରବେଶ ପତ୍ର ଛପା ସଂଖ୍ୟା",
-                translate: "Printed Devotee",
-                status: "printed",
+                translate: "Printed",
+                status: "Delegate printed",
                 count: await devoteeList("printed")
             },
             {
@@ -455,15 +459,15 @@ let data;
             },
             {
                 title: "",
-                message: "",
-                translate: "Data Submitted",
+                message: "ନିବେଦନକାରୀ ପ୍ରବେଶପତ୍ର",
+                translate: "Delegate Submitted",
                 status: "dataSubmitted",
                 count: await devoteeList("dataSubmitted")
             },
             {
                 title: "",
-                message: "",
-                translate: "Approved Devotee",
+                message: "ଗ୍ରହୀତ ପ୍ରବେଶପତ୍ର",
+                translate: "Delegate Approved",
                 status: "Approved",
                 count: await devoteeList("approved")
             },
