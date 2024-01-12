@@ -431,34 +431,6 @@ let data;
             },
             {
                 title: "",
-                message: "ପ୍ରବେଶ ପତ୍ର ପ୍ରଣାମୀ ଦାଖଲକାରୀ ସଂଖ୍ୟା",
-                translate: "Paid Devotee",
-                status : "paid",
-                count:await devoteeList("paid")
-            },
-            {
-                title: "",
-                message: "ରଦ୍ଦ ହୋଇଥିବା ପ୍ରବେଶ ପତ୍ର",
-                translate: "Blacklisted Devotee",
-                status: "blacklisted",
-                count: await devoteeList("rejected"),
-            },
-            {
-                title: "",
-                message: "ପ୍ରବେଶ ପତ୍ର ଛପା ସଂଖ୍ୟା",
-                translate: "Delegate Printed",
-                status: "printed",
-                count: await devoteeList("printed")
-            },
-            {
-                title: "",
-                message: "ହଜିଯାଇଥିବା ପ୍ରବେଶ ପତ୍ର",
-                translate: "Lost delegate card",
-                status: "lost",
-                count: await devoteeList("lost")
-            },
-            {
-                title: "",
                 message: "ନିବେଦନକାରୀ ପ୍ରବେଶପତ୍ର",
                 translate: "Delegate Submitted",
                 status: "dataSubmitted",
@@ -471,6 +443,37 @@ let data;
                 status: "Approved",
                 count: await devoteeList("approved")
             },
+            {
+                title: "",
+                message: "ପ୍ରବେଶ ପତ୍ର ପ୍ରଣାମୀ ଦାଖଲକାରୀ ସଂଖ୍ୟା",
+                translate: "Paid Devotee",
+                status : "paid",
+                count:await devoteeList("paid")
+            },
+            {
+                title: "",
+                message: "ପ୍ରବେଶ ପତ୍ର ଛପା ସଂଖ୍ୟା",
+                translate: "Delegate Printed",
+                status: "printed",
+                count: await devoteeList("printed")
+            },
+            {
+                title: "",
+                message: "ରଦ୍ଦ ହୋଇଥିବା ପ୍ରବେଶ ପତ୍ର",
+                translate: "Blacklisted Delegate",
+                status: "blacklisted",
+                count: await devoteeList("rejected"),
+            },
+           
+            {
+                title: "",
+                message: "ହଜିଯାଇଥିବା ପ୍ରବେଶ ପତ୍ର",
+                translate: "Lost delegate card",
+                status: "lost",
+                count: await devoteeList("lost")
+            },
+          
+          
             {
                 title: moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),
                 message: "ବାଲ୍ୟ",
