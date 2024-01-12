@@ -245,7 +245,12 @@ const searchDevotee = async (req, res) => {
     let searchDevotee;
     try {
         if(req.query.status){
-            searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }})
+            if(req.query.status =="dataSubmitted"){
+searchDevotee = await devotee.find({status:{$in:["dataSubmitted","rejected"]}})
+            }else{
+                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }})
+            }
+            
         }
         if(req.query.devoteeName){
          searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeName}`, '$options': 'i' }});
@@ -404,7 +409,13 @@ const devotee_delete = async (req, res) => {
 const admin_devoteeDashboard = async (req, res) => {
     try {
 async function devoteeList(status) {
-    let statusby = await devotee.find({status: status});
+    let statusby ;
+    if(status = "dataSubmitted"){
+statusby = await devotee.find({status:{$in:["dataSubmitted","rejected"]}})
+    }else{
+        statusby = await devotee.find({status: status});
+    }
+    
     return statusby.length;
 }
 async function countDevoteePrasadtaken(desiredDate, timingKey) {
@@ -444,9 +455,9 @@ let data;
             {
                 title: "",
                 message: "ନିବେଦନକାରୀ ପ୍ରବେଶପତ୍ର",
-                translate: "Delegate Submitted",
+                translate: "Delegate Submitted / rejected",
                 status: "dataSubmitted",
-                count: await devoteeList("dataSubmitted","rejected")
+                count: await devoteeList("dataSubmitted")
             },
             {
                 title: "",
