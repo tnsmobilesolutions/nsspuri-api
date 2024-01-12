@@ -416,7 +416,7 @@ const admin_devoteeDashboard = async (req, res) => {
     try {
 async function devoteeList(status) {
     let statusby ;
-    if(status = "dataSubmitted"){
+    if(status == 'dataSubmitted'){
 statusby = await devotee.find({status:{$in:["dataSubmitted","rejected"]}})
     }else{
         statusby = await devotee.find({status: status});
