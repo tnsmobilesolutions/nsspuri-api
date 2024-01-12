@@ -389,6 +389,11 @@ let data = req.body;
 if(data.status == "approved"){
     data.approvedBy = currentDevotee.devoteeId;
 }
+let oldDevoteeData = await devotee.findOne({devoteeId: req.params.id});
+if(!oldDevoteeData) throw messages.NO_DEVOTEEFOUND
+if(oldDevoteeData.status == "rejected"){
+    data.status= "dataSubbmited"
+}
 data.updatedbyId = currentDevotee.devoteeId;
 data.updatedOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
 
