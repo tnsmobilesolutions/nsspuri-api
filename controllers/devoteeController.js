@@ -259,15 +259,13 @@ searchDevotee = await devotee.find({status:{$in:["dataSubmitted","rejected"]}})
             searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } })
         }
         for (let i = 0; i < searchDevotee.length; i++) {
-            const approvedByDevotee = "";
+            let approvedByDevotee 
             const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
-            if(searchDevotee[i].approvedBy){
-                approvedByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].approvedBy });
-            }
+         
             
             if (createdByDevotee) {
                 searchDevotee[i].createdById = createdByDevotee.name;
-                searchDevotee[i].approvedBy = approvedByDevotee.name || "";
+                
                 // delete allDevotee[i].createdById; // Remove the createdById field
             }
         }
