@@ -329,19 +329,22 @@ const advanceSearchDevotee = async (req, res) => {
 
 
 
-for (let i = 0; i < searchDevotee.length; i++) {
-    const approvedByDevotee = ""
-    const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
-    if(searchDevotee[i].approvedBy){
-        approvedByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].approvedBy });
-    }
-    
-    if (createdByDevotee) {
-        searchDevotee[i].createdById = createdByDevotee.name;
-        searchDevotee[i].approvedBy = approvedByDevotee.name || "";
-        // delete allDevotee[i].createdById; // Remove the createdById field
-    }
-}
+        for (let i = 0; i < searchDevotee.length; i++) {
+            let approvedByDevoteename = "";
+            const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
+         if(searchDevotee[i].status== "approved"){
+           let approvedByDevotee = await  devotee.findOne({ devoteeId: searchDevotee[i].approvedBy });
+           if(approvedByDevotee){
+              approvedByDevoteename = approvedByDevotee.name  ?? ""
+           }
+          
+         }
+            
+            if (createdByDevotee) {
+                searchDevotee[i].createdById = createdByDevotee.name;
+                searchDevotee[i].approvedBy = approvedByDevoteename
+            }
+        }
 
 
     //   let advanceSearch = await devotee.find({})
