@@ -13,8 +13,8 @@ const messages = require("./messages/message")
 const devotee_create = async (req, res) => {
     try {
         let data = req.body;
-        let checkAvailableDevotee =await devotee.findOne({emailId: data.emailId});
-        if(checkAvailableDevotee) throw messages.EXISTING_DEVOTEE;
+        // let checkAvailableDevotee =await devotee.findOne({emailId: data.emailId});
+        // if(checkAvailableDevotee) throw messages.EXISTING_DEVOTEE;
 
         let findLastdevoteeCode =await devotee.find({}).sort({devoteeCode : -1}).limit(1);
         console.log(findLastdevoteeCode);
