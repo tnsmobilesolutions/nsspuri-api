@@ -145,8 +145,8 @@ async function compareThreeTime(orderTime, mealStartTime, mealEndTime) {
 const createRelativeDevotee = async (req, res) => {
     try {
         let data = req.body
-        let existdevotee =await devotee.findOne({emailId: data.emailId})
-        if (existdevotee) throw messages.EXISTING_DEVOTEE
+        // let existdevotee =await devotee.findOne({emailId: data.emailId})
+        // if (existdevotee) throw messages.EXISTING_DEVOTEE
 
         let findLastdevoteeCode =await devotee.find({}).sort({devoteeCode : -1}).limit(1);
         console.log("findLastdevoteeCode --- ",findLastdevoteeCode)
@@ -321,14 +321,7 @@ const advanceSearchDevotee = async (req, res) => {
             }else if(req.query.devoteeCode){
                 searchDevotee = await devotee.find({devoteeCode: req.query.devoteeCode}).sort({devoteeCode:1})
             }
-            
-            
-             
         }
-
-
-
-
         for (let i = 0; i < searchDevotee.length; i++) {
             let approvedByDevoteename = "";
             const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
