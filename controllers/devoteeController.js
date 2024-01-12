@@ -283,7 +283,7 @@ const advanceSearchDevotee = async (req, res) => {
             }else if(req.query.name){
                 searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:1})
             }else if(req.query.devoteeCode){
-                searchDevotee = await devotee.find({devoteeCode: {"$regex": `${req.query.devoteeCode}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:1})
+                searchDevotee = await devotee.find({devoteeCode:req.query.devoteeCode,status: req.query.advanceStatus}).sort({devoteeCode:1})
             }
         }else{
             if(req.query.sangha){
@@ -301,10 +301,11 @@ const advanceSearchDevotee = async (req, res) => {
             }else if(req.query.name){
                 searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' }}).sort({devoteeCode:1})
             }else if(req.query.devoteeCode){
-                searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeCode}`, '$options': 'i' }}).sort({devoteeCode:1})
-            }else if(req.query.status){
-                searchDevotee = await devotee.find({name: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:1})
-            }   
+                searchDevotee = await devotee.find({devoteeCode: req.query.devoteeCode}).sort({devoteeCode:1})
+            }
+            
+            
+             
         }
 
 
