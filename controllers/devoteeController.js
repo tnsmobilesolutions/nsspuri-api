@@ -254,9 +254,15 @@ const searchDevotee = async (req, res) => {
             searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } })
         }
         for (let i = 0; i < searchDevotee.length; i++) {
+            const approvedByDevotee = "";
             const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
+            if(searchDevotee[i].approvedBy){
+                approvedByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].approvedBy });
+            }
+            
             if (createdByDevotee) {
                 searchDevotee[i].createdById = createdByDevotee.name;
+                searchDevotee[i].approvedBy = approvedByDevotee.name || "";
                 // delete allDevotee[i].createdById; // Remove the createdById field
             }
         }
@@ -316,9 +322,15 @@ const advanceSearchDevotee = async (req, res) => {
 
 
 for (let i = 0; i < searchDevotee.length; i++) {
+    const approvedByDevotee = ""
     const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
+    if(searchDevotee[i].approvedBy){
+        approvedByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].approvedBy });
+    }
+    
     if (createdByDevotee) {
         searchDevotee[i].createdById = createdByDevotee.name;
+        searchDevotee[i].approvedBy = approvedByDevotee.name || "";
         // delete allDevotee[i].createdById; // Remove the createdById field
     }
 }
@@ -363,7 +375,7 @@ const devotee_update = async (req, res) => {
     try {
         let currentDevotee = await devotee.findOne({devoteeId : req.user.devoteeId})
 let data = req.body;
-if(data.status == "Accepted"){
+if(data.status == "approved"){
     data.approvedBy = currentDevotee.devoteeId;
 }
 data.updatedbyId = currentDevotee.devoteeId;
@@ -434,7 +446,7 @@ let data;
                 message: "ନିବେଦନକାରୀ ପ୍ରବେଶପତ୍ର",
                 translate: "Delegate Submitted",
                 status: "dataSubmitted",
-                count: await devoteeList("dataSubmitted")
+                count: await devoteeList("dataSubmitted","rejected")
             },
             {
                 title: "",
