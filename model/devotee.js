@@ -6,6 +6,7 @@ const devoteeSchema = new mongoose.Schema({
     emailId: { type: String},
     role: { type: String,default: "User"},
     dob: String,
+    remarks: String,
     bloodGroup: String,
     gender: String,
     presentAddress: String,
