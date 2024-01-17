@@ -7,6 +7,7 @@ const sanghaController = require("../controllers/sanghaController")
 const addressController = require("../controllers/addressController")
 const sammilaniController = require("../controllers/sammilaniController")
 const jwt = require("jsonwebtoken")
+const allController = require("../controllers/allController")
 
 
 //Authentication Token
@@ -91,5 +92,7 @@ putRequest("/address/:id", addressController.address_update);
 getRequest("/address", addressController.address_all);
 getRequest("/address/:id", addressController.address_details);
 deleteRequest("/address/:id", addressController.address_delete);
+
+router.put("/updateFromDB",allController.dbController.updateDOB)
 
 module.exports = router;
