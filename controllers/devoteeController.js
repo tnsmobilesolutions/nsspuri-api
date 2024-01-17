@@ -250,21 +250,30 @@ const devotee_with_relatives = async (req, res) => {
 // search Devotee with Relatives
 const searchDevotee = async (req, res) => {
     let searchDevotee;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5000;
+    const numberofskipdata = (page - 1) * limit;
+    let count
     try {
         if(req.query.status){
             if(req.query.status =="dataSubmitted"){
-searchDevotee = await devotee.find({status:{$in:["dataSubmitted","rejected"]}}).sort({devoteeCode:-1})
+                count = await devotee.countDocuments({status:{$in:["dataSubmitted","rejected"]}})
+searchDevotee = await devotee.find({status:{$in:["dataSubmitted","rejected"]}}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
             }else{
-                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:-1})
+                count = await devotee.countDocuments({status: {"$regex": `${req.query.status}`, '$options': 'i' }})
+                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
             }
             
         }
         if(req.query.devoteeName){
-         searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeName}`, '$options': 'i' }}).sort({devoteeCode:-1});
+            count = await devotee.find({name: {"$regex": `${req.query.devoteeName}`, '$options': 'i' }})
+         searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeName}`, '$options': 'i' }}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); ;
         }
         if(req.query.status && req.query.devoteeName){
-            searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } }).sort({devoteeCode:-1})
+            count = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } })
+            searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } }).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
         }
+        const totalPages = Math.ceil(count / limit);
         for (let i = 0; i < searchDevotee.length; i++) {
             let approvedByDevoteename = "";
             const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
@@ -282,7 +291,7 @@ searchDevotee = await devotee.find({status:{$in:["dataSubmitted","rejected"]}}).
             }
         }
        
-        res.status(200).json({searchDevotee})
+        res.status(200).json({searchDevotee,count,totalPages,page})
     } catch (error) {
         console.log(error);
         res.status(400).json({"error":error.message});
