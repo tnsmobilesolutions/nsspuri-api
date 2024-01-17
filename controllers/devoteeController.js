@@ -168,12 +168,19 @@ const createRelativeDevotee = async (req, res) => {
 // All Devotee or by sangha
 const devotee_all = async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5000;
+        const numberofskipdata = (page - 1) * limit;
         let allDevotee = []
+        let count
         if (req.query.sangha) {
-            allDevotee = await devotee.find({sangha:{ "$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({devoteeCode:-1})
+            count = await devotee.countDocuments({sangha:{ "$regex": `${req.query.sangha}`, '$options': 'i' }})
+            allDevotee = await devotee.find({sangha:{ "$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
         } else {
-        allDevotee = await devotee.find().sort({devoteeCode:-1})
+            count = await devotee.countDocuments()
+        allDevotee = await devotee.find().sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
         }
+        const totalPages = Math.ceil(count / limit);
         for (let i = 0; i < allDevotee.length; i++) {
             const createdByDevotee = await devotee.findOne({ devoteeId: allDevotee[i].createdById });
             if (createdByDevotee) {
@@ -181,7 +188,7 @@ const devotee_all = async (req, res) => {
                 // delete allDevotee[i].createdById; // Remove the createdById field
             }
         }
-        res.status(200).json({allDevotee})
+        res.status(200).json({allDevotee,count,totalPages,page})
     } catch (error) {
         console.log(error);
         res.status(400).json({"error":error.message});
