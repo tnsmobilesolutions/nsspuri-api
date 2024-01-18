@@ -516,7 +516,7 @@ let data;
                 message: "ରଦ୍ଦ ହୋଇଥିବା ପ୍ରବେଶ ପତ୍ର",
                 translate: "Blacklisted Delegate",
                 status: "blacklisted",
-                count: await devoteeList("rejected"),
+                count: await devoteeList("blacklisted"),
             },
            
             {
