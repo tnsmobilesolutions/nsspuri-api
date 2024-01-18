@@ -214,15 +214,7 @@ const devotee_details = async (req, res) => {
 };
 const devotee_details_by_devoteeId = async (req, res) => {
     try {
-       
         const singleDevotee = await devotee.find({devoteeId:req.params.id})
-        // for (let i = 0; i < singleDevotee.length; i++) {
-        //     const createdByDevotee = await devotee.findOne({ devoteeId: singleDevotee[i].createdById });
-        //     if (createdByDevotee) {
-        //         singleDevotee[i].createdById = createdByDevotee.name;
-        //         // delete singleDevotee[i].createdById; // Remove the createdById field
-        //     }
-        // }
         res.status(200).json({singleDevotee})
     } catch (error) {
         console.log(error);
@@ -440,26 +432,45 @@ statusby = await devotee.find({status:{$in:["dataSubmitted","rejected"]}})
 }
 async function countDevoteePrasadtaken(desiredDate, timingKey) {
     const countResult = await allmodel.prasadModel.aggregate([
-        { $unwind: '$prasad' },
-        {
-          $match: {
-            'prasad.date': desiredDate,
-            timingKey: { $ne: '' }
-          }
+      { $unwind: '$prasad' },
+      {
+        $match: {
+          'prasad.date': desiredDate,
+          [timingKey]: { $ne: '' },
         },
-        // {
-        //   $group: {
-        //     _id: '$devoteeCode',
-        //     count: { $sum: 1 }
-        //   }
-        // },
-        // { $group: { _id: null, total: { $sum: 1 } } }
+      },
+      {
+        $group: {
+          _id: '$devoteeId',
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalCount: { $sum: 1 },
+        },
+      },
+    ]);
+  
+    console.log('countResult------', countResult);
+  
+    let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+    return devoteeprasadTakenCount;
+  }
+  
+  // Example usage
+  // Count users with balya timings on '2023-12-02'
+//   countDevoteePrasadtaken('2023-12-02', 'prasad.balyaTiming');
+  
+  // Count users with madhyana timings on '2023-12-02'
+//   countDevoteePrasadtaken('2023-12-02', 'prasad.madhyanaTiming');
+  
+  // Count users with ratri timings on '2023-12-02'
+//   countDevoteePrasadtaken('2023-12-02', 'prasad.ratraTiming');
+  
+  
 
-      ]);
-      console.log("countResult------",countResult)
-      let devoteeprasadTakenCount = countResult.length;
-      return devoteeprasadTakenCount;
-}
+  
        let allDevotee = await devotee.find().sort({name:1})
        let currentDevotee = await devotee.findById(req.user._id)
 let data;
