@@ -12,7 +12,7 @@ const devoteeSchema = new mongoose.Schema({
     presentAddress: String,
     permanentAddress: String,
     sangha: String,
-    age:Number,
+    ageGroup: String,
     profilePhotoUrl: String,
     isKYDVerified: { type: Boolean, default: false },
     hasGruhasana: String,
