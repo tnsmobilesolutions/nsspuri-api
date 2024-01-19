@@ -283,6 +283,7 @@ searchDevotee = await devotee.find({status:{$in:["dataSubmitted","rejected"]}}).
         const totalPages = Math.ceil(count / limit);
         for (let i = 0; i < searchDevotee.length; i++) {
             let approvedByDevoteename = "";
+            let rejectedByDevoteename = "";
             const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
          if(searchDevotee[i].status== "approved"){
            let approvedByDevotee = await  devotee.findOne({ devoteeId: searchDevotee[i].approvedBy });
@@ -291,10 +292,17 @@ searchDevotee = await devotee.find({status:{$in:["dataSubmitted","rejected"]}}).
            }
           
          }
+         if(searchDevotee[i].status== "rejected"){
+            let rejectedByDevotee = await  devotee.findOne({ devoteeId: searchDevotee[i].rejectedBy });
+            if(rejectedByDevotee){
+                rejectedByDevoteename = rejectedByDevotee.name  ?? ""
+            }
+          }
             
             if (createdByDevotee) {
                 searchDevotee[i].createdById = createdByDevotee.name;
                 searchDevotee[i].approvedBy = approvedByDevoteename
+                searchDevotee[i].rejectedBy = rejectedByDevoteename
             }
         }
        
@@ -405,6 +413,9 @@ let data = req.body;
 if(data.status == "approved"){
     data.approvedBy = currentDevotee.devoteeId;
 }
+if(data.status == "rejected"){
+    data.rejectedBy = currentDevotee.devoteeId;
+}
 let oldDevoteeData = await devotee.findOne({devoteeId: req.params.id});
 if(!oldDevoteeData) throw messages.NO_DEVOTEEFOUND
 if(oldDevoteeData.status == "rejected"){
@@ -437,12 +448,7 @@ const admin_devoteeDashboard = async (req, res) => {
     try {
 async function devoteeList(status) {
     let statusby ;
-    if(status == 'dataSubmitted'){
-statusby = await devotee.find({status:{$in:["dataSubmitted","rejected"]}})
-    }else{
         statusby = await devotee.find({status: status});
-    }
-    
     return statusby.length;
 }
 async function countDevoteePrasadtaken(desiredDate, timingKey) {
@@ -473,15 +479,6 @@ async function countDevoteePrasadtaken(desiredDate, timingKey) {
     return devoteeprasadTakenCount;
   }
   
-  // Example usage
-  // Count users with balya timings on '2023-12-02'
-//   countDevoteePrasadtaken('2023-12-02', 'prasad.balyaTiming');
-  
-  // Count users with madhyana timings on '2023-12-02'
-//   countDevoteePrasadtaken('2023-12-02', 'prasad.madhyanaTiming');
-  
-  // Count users with ratri timings on '2023-12-02'
-//   countDevoteePrasadtaken('2023-12-02', 'prasad.ratraTiming');
   
   
 
@@ -501,7 +498,7 @@ let data;
             {
                 title: "",
                 message: "ନିବେଦନକାରୀ ପ୍ରବେଶପତ୍ର",
-                translate: "Delegate Submitted / rejected",
+                translate: "Delegate Submitted",
                 status: "dataSubmitted",
                 count: await devoteeList("dataSubmitted")
             },
@@ -525,6 +522,13 @@ let data;
                 translate: "Delegate Printed",
                 status: "printed",
                 count: await devoteeList("printed")
+            },
+            {
+                title: "",
+                message: "ଖାରଜ ହୋଇଥିବା ପ୍ରବେଶ ପତ୍ର",
+                translate: "Rejected Delegate",
+                status: "rejected",
+                count: await devoteeList("rejected"),
             },
             {
                 title: "",
