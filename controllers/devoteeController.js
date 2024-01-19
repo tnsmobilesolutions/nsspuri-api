@@ -42,6 +42,21 @@ const getPrasadUpdate =  async() => {
 
 
 }
+const devoteeListBycreatedById = async(req,res)=>{
+  try {
+    let devoteeList = await allmodel.devoteemodel.find({createdById: req.params.id})
+    for (let i = 0; i < devoteeList.length; i++) {
+        const createdByDevotee = await devotee.findOne({ devoteeId: devoteeList[i].createdById });
+        if (createdByDevotee) {
+            devoteeList[i].createdById = createdByDevotee.name;
+            // delete allDevotee[i].createdById; // Remove the createdById field
+        }
+    }
+    res.status(200).json({devoteeList})
+  } catch (error) {
+    console.log(error)
+  }
+}
 //update prasad by qr code
 const prasdUpdateDevotee = async (req, res) => {
     let data = req.body;
@@ -617,7 +632,8 @@ module.exports = {
     advanceSearchDevotee,
     createRelativeDevotee,
     admin_devoteeDashboard,
-    prasdUpdateDevotee
+    prasdUpdateDevotee,
+    devoteeListBycreatedById
 }
 
 //

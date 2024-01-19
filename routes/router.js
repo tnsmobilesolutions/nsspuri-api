@@ -49,6 +49,7 @@ getRequest("/devotee", devoteeController.devotee_all);
 getRequest("/devotee/currentUser", devoteeController.devotee_details);
 getRequest("/devotee/relatives", devoteeController.devotee_with_relatives);
 getRequest("/devoteeById/:id", devoteeController.devotee_details_by_devoteeId);
+getRequest("/devoteeListBycreatedById/:id", devoteeController.devoteeListBycreatedById);
 getRequest("/devotee/search", devoteeController.searchDevotee);
 getRequest("/devotee/advance-search", devoteeController.advanceSearchDevotee);
 router.get("/login/:uid", devoteeController.devoteeLogin);
