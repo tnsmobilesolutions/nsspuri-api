@@ -7,6 +7,7 @@ const sanghaController = require("../controllers/sanghaController")
 const addressController = require("../controllers/addressController")
 const sammilaniController = require("../controllers/sammilaniController")
 const jwt = require("jsonwebtoken")
+const allController = require("../controllers/allController")
 
 
 //Authentication Token
@@ -48,6 +49,7 @@ getRequest("/devotee", devoteeController.devotee_all);
 getRequest("/devotee/currentUser", devoteeController.devotee_details);
 getRequest("/devotee/relatives", devoteeController.devotee_with_relatives);
 getRequest("/devoteeById/:id", devoteeController.devotee_details_by_devoteeId);
+getRequest("/devoteeListBycreatedById/:id", devoteeController.devoteeListBycreatedById);
 getRequest("/devotee/search", devoteeController.searchDevotee);
 getRequest("/devotee/advance-search", devoteeController.advanceSearchDevotee);
 router.get("/login/:uid", devoteeController.devoteeLogin);
@@ -81,7 +83,7 @@ deleteRequest("/transaction/:id", transactionController.transaction_delete);
 // Sangha Route
 postRequest("/sangha", sanghaController.sangha_create);
 putRequest("/sangha/:id", sanghaController.sangha_update);
-getRequest("/sangha", sanghaController.sangha_all);
+router.get("/sangha", sanghaController.sangha_all);
 getRequest("/sangha/:id", sanghaController.sangha_details);
 deleteRequest("/sangha/:id", sanghaController.sangha_delete);
 
@@ -91,5 +93,7 @@ putRequest("/address/:id", addressController.address_update);
 getRequest("/address", addressController.address_all);
 getRequest("/address/:id", addressController.address_details);
 deleteRequest("/address/:id", addressController.address_delete);
+
+router.put("/updateFromDB",allController.dbController.updateDOB)
 
 module.exports = router;

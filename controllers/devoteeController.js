@@ -42,6 +42,21 @@ const getPrasadUpdate =  async() => {
 
 
 }
+const devoteeListBycreatedById = async(req,res)=>{
+  try {
+    let devoteeList = await allmodel.devoteemodel.find({createdById: req.params.id})
+    for (let i = 0; i < devoteeList.length; i++) {
+        const createdByDevotee = await devotee.findOne({ devoteeId: devoteeList[i].createdById });
+        if (createdByDevotee) {
+            devoteeList[i].createdById = createdByDevotee.name;
+            // delete allDevotee[i].createdById; // Remove the createdById field
+        }
+    }
+    res.status(200).json({devoteeList})
+  } catch (error) {
+    console.log(error)
+  }
+}
 //update prasad by qr code
 const prasdUpdateDevotee = async (req, res) => {
     let data = req.body;
@@ -168,12 +183,19 @@ const createRelativeDevotee = async (req, res) => {
 // All Devotee or by sangha
 const devotee_all = async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5000;
+        const numberofskipdata = (page - 1) * limit;
         let allDevotee = []
+        let count
         if (req.query.sangha) {
-            allDevotee = await devotee.find({sangha:{ "$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({devoteeCode:-1})
+            count = await devotee.countDocuments({sangha:{ "$regex": `${req.query.sangha}`, '$options': 'i' }})
+            allDevotee = await devotee.find({sangha:{ "$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
         } else {
-        allDevotee = await devotee.find().sort({devoteeCode:-1})
+            count = await devotee.countDocuments()
+        allDevotee = await devotee.find().sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
         }
+        const totalPages = Math.ceil(count / limit);
         for (let i = 0; i < allDevotee.length; i++) {
             const createdByDevotee = await devotee.findOne({ devoteeId: allDevotee[i].createdById });
             if (createdByDevotee) {
@@ -181,7 +203,7 @@ const devotee_all = async (req, res) => {
                 // delete allDevotee[i].createdById; // Remove the createdById field
             }
         }
-        res.status(200).json({allDevotee})
+        res.status(200).json({allDevotee,count,totalPages,page})
     } catch (error) {
         console.log(error);
         res.status(400).json({"error":error.message});
@@ -207,15 +229,7 @@ const devotee_details = async (req, res) => {
 };
 const devotee_details_by_devoteeId = async (req, res) => {
     try {
-       
         const singleDevotee = await devotee.find({devoteeId:req.params.id})
-        // for (let i = 0; i < singleDevotee.length; i++) {
-        //     const createdByDevotee = await devotee.findOne({ devoteeId: singleDevotee[i].createdById });
-        //     if (createdByDevotee) {
-        //         singleDevotee[i].createdById = createdByDevotee.name;
-        //         // delete singleDevotee[i].createdById; // Remove the createdById field
-        //     }
-        // }
         res.status(200).json({singleDevotee})
     } catch (error) {
         console.log(error);
@@ -243,23 +257,33 @@ const devotee_with_relatives = async (req, res) => {
 // search Devotee with Relatives
 const searchDevotee = async (req, res) => {
     let searchDevotee;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5000;
+    const numberofskipdata = (page - 1) * limit;
+    let count
     try {
         if(req.query.status){
             if(req.query.status =="dataSubmitted"){
-searchDevotee = await devotee.find({status:{$in:["dataSubmitted","rejected"]}}).sort({devoteeCode:-1})
+                count = await devotee.countDocuments({status:{$in:["dataSubmitted","rejected"]}})
+searchDevotee = await devotee.find({status:{$in:["dataSubmitted","rejected"]}}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
             }else{
-                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:-1})
+                count = await devotee.countDocuments({status: {"$regex": `${req.query.status}`, '$options': 'i' }})
+                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
             }
             
         }
         if(req.query.devoteeName){
-         searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeName}`, '$options': 'i' }}).sort({devoteeCode:-1});
+            count = await devotee.find({name: {"$regex": `${req.query.devoteeName}`, '$options': 'i' }})
+         searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeName}`, '$options': 'i' }}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); ;
         }
         if(req.query.status && req.query.devoteeName){
-            searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } }).sort({devoteeCode:-1})
+            count = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } })
+            searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } }).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
         }
+        const totalPages = Math.ceil(count / limit);
         for (let i = 0; i < searchDevotee.length; i++) {
             let approvedByDevoteename = "";
+            let rejectedByDevoteename = "";
             const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
          if(searchDevotee[i].status== "approved"){
            let approvedByDevotee = await  devotee.findOne({ devoteeId: searchDevotee[i].approvedBy });
@@ -268,14 +292,21 @@ searchDevotee = await devotee.find({status:{$in:["dataSubmitted","rejected"]}}).
            }
           
          }
+         if(searchDevotee[i].status== "rejected"){
+            let rejectedByDevotee = await  devotee.findOne({ devoteeId: searchDevotee[i].rejectedBy });
+            if(rejectedByDevotee){
+                rejectedByDevoteename = rejectedByDevotee.name  ?? ""
+            }
+          }
             
             if (createdByDevotee) {
                 searchDevotee[i].createdById = createdByDevotee.name;
                 searchDevotee[i].approvedBy = approvedByDevoteename
+                searchDevotee[i].rejectedBy = rejectedByDevoteename
             }
         }
        
-        res.status(200).json({searchDevotee})
+        res.status(200).json({searchDevotee,count,totalPages,page})
     } catch (error) {
         console.log(error);
         res.status(400).json({"error":error.message});
@@ -378,9 +409,14 @@ const devoteeLogin = async (req, res) => {
 const devotee_update = async (req, res) => {
     try {
         let currentDevotee = await devotee.findOne({devoteeId : req.user.devoteeId})
+
 let data = req.body;
+data.updatedById = currentDevotee.devoteeId
 if(data.status == "approved"){
     data.approvedBy = currentDevotee.devoteeId;
+}
+if(data.status == "rejected"){
+    data.rejectedBy = currentDevotee.devoteeId;
 }
 let oldDevoteeData = await devotee.findOne({devoteeId: req.params.id});
 if(!oldDevoteeData) throw messages.NO_DEVOTEEFOUND
@@ -414,36 +450,41 @@ const admin_devoteeDashboard = async (req, res) => {
     try {
 async function devoteeList(status) {
     let statusby ;
-    if(status == 'dataSubmitted'){
-statusby = await devotee.find({status:{$in:["dataSubmitted","rejected"]}})
-    }else{
         statusby = await devotee.find({status: status});
-    }
-    
     return statusby.length;
 }
-async function countDevoteePrasadtaken(desiredDate, timingKey) {
+async function countDevoteePrasadtaken(desiredDate, timeStamp) {
     const countResult = await allmodel.prasadModel.aggregate([
-        { $unwind: '$prasad' },
-        {
-          $match: {
-            'prasad.date': desiredDate,
-            timingKey: { $ne: '' }
-          }
+      { $unwind: '$prasad' },
+      {
+        $match: {
+          'prasad.date': desiredDate,
+          [timeStamp]: { $ne: '' },
         },
-        // {
-        //   $group: {
-        //     _id: '$devoteeCode',
-        //     count: { $sum: 1 }
-        //   }
-        // },
-        // { $group: { _id: null, total: { $sum: 1 } } }
+      },
+      {
+        $group: {
+          _id: '$devoteeId',
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalCount: { $sum: 1 },
+        },
+      },
+    ]);
+  
+    console.log('countResult------', countResult);
+  
+    let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+    return devoteeprasadTakenCount;
+  }
+  
+  
+  
 
-      ]);
-      console.log("countResult------",countResult)
-      let devoteeprasadTakenCount = countResult.length;
-      return devoteeprasadTakenCount;
-}
+  
        let allDevotee = await devotee.find().sort({name:1})
        let currentDevotee = await devotee.findById(req.user._id)
 let data;
@@ -459,7 +500,7 @@ let data;
             {
                 title: "",
                 message: "ନିବେଦନକାରୀ ପ୍ରବେଶପତ୍ର",
-                translate: "Delegate Submitted / rejected",
+                translate: "Delegate Submitted",
                 status: "dataSubmitted",
                 count: await devoteeList("dataSubmitted")
             },
@@ -486,10 +527,17 @@ let data;
             },
             {
                 title: "",
+                message: "ଖାରଜ ହୋଇଥିବା ପ୍ରବେଶ ପତ୍ର",
+                translate: "Rejected Delegate",
+                status: "rejected",
+                count: await devoteeList("rejected"),
+            },
+            {
+                title: "",
                 message: "ରଦ୍ଦ ହୋଇଥିବା ପ୍ରବେଶ ପତ୍ର",
                 translate: "Blacklisted Delegate",
                 status: "blacklisted",
-                count: await devoteeList("rejected"),
+                count: await devoteeList("blacklisted"),
             },
            
             {
@@ -590,7 +638,8 @@ module.exports = {
     advanceSearchDevotee,
     createRelativeDevotee,
     admin_devoteeDashboard,
-    prasdUpdateDevotee
+    prasdUpdateDevotee,
+    devoteeListBycreatedById
 }
 
 //

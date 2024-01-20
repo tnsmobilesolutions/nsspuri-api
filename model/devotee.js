@@ -12,6 +12,7 @@ const devoteeSchema = new mongoose.Schema({
     presentAddress: String,
     permanentAddress: String,
     sangha: String,
+    ageGroup: String,
     profilePhotoUrl: String,
     isKYDVerified: { type: Boolean, default: false },
     hasGruhasana: String,
@@ -31,6 +32,7 @@ const devoteeSchema = new mongoose.Schema({
     createdById: String,
     updatedById: String,
     approvedBy: String,
+    rejectedBy: String,
     createdOn: { type: String, default: moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A") },
     updatedOn: { type: String, default: moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A") },
     status: { type: String, default: "dataSubmitted"}, 
@@ -43,7 +45,7 @@ const devoteeSchema = new mongoose.Schema({
         postalCode: Number,
         addressId: String
     },
-});
+},{timestamps: true});
 
 module.exports = mongoose.model("devotee", devoteeSchema);
 
