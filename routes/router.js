@@ -83,7 +83,7 @@ deleteRequest("/transaction/:id", transactionController.transaction_delete);
 // Sangha Route
 postRequest("/sangha", sanghaController.sangha_create);
 putRequest("/sangha/:id", sanghaController.sangha_update);
-getRequest("/sangha", sanghaController.sangha_all);
+router.get("/sangha", sanghaController.sangha_all);
 getRequest("/sangha/:id", sanghaController.sangha_details);
 deleteRequest("/sangha/:id", sanghaController.sangha_delete);
 

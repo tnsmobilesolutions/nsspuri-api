@@ -409,7 +409,9 @@ const devoteeLogin = async (req, res) => {
 const devotee_update = async (req, res) => {
     try {
         let currentDevotee = await devotee.findOne({devoteeId : req.user.devoteeId})
+
 let data = req.body;
+data.updatedById = currentDevotee.devoteeId
 if(data.status == "approved"){
     data.approvedBy = currentDevotee.devoteeId;
 }
@@ -451,13 +453,13 @@ async function devoteeList(status) {
         statusby = await devotee.find({status: status});
     return statusby.length;
 }
-async function countDevoteePrasadtaken(desiredDate, timingKey) {
+async function countDevoteePrasadtaken(desiredDate, timeStamp) {
     const countResult = await allmodel.prasadModel.aggregate([
       { $unwind: '$prasad' },
       {
         $match: {
           'prasad.date': desiredDate,
-          [timingKey]: { $ne: '' },
+          [timeStamp]: { $ne: '' },
         },
       },
       {
