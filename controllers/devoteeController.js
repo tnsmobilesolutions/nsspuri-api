@@ -263,13 +263,9 @@ const searchDevotee = async (req, res) => {
     let count
     try {
         if(req.query.status){
-            if(req.query.status =="dataSubmitted"){
-                count = await devotee.countDocuments({status:{$in:["dataSubmitted","rejected"]}})
-searchDevotee = await devotee.find({status:{$in:["dataSubmitted","rejected"]}}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
-            }else{
                 count = await devotee.countDocuments({status: {"$regex": `${req.query.status}`, '$options': 'i' }})
                 searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
-            }
+           
             
         }
         if(req.query.devoteeName){
