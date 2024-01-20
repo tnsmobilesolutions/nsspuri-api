@@ -45,7 +45,7 @@ const devoteeSchema = new mongoose.Schema({
         postalCode: Number,
         addressId: String
     },
-});
+},{timestamps: true});
 
 module.exports = mongoose.model("devotee", devoteeSchema);
 
