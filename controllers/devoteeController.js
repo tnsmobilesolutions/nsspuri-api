@@ -351,6 +351,7 @@ const advanceSearchDevotee = async (req, res) => {
         }
         for (let i = 0; i < searchDevotee.length; i++) {
             let approvedByDevoteename = "";
+            let rejectedByDevoteename = "";
             const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
          if(searchDevotee[i].status== "approved"){
            let approvedByDevotee = await  devotee.findOne({ devoteeId: searchDevotee[i].approvedBy });
@@ -359,10 +360,17 @@ const advanceSearchDevotee = async (req, res) => {
            }
           
          }
+         if(searchDevotee[i].status== "rejected"){
+            let rejectedByDevotee = await  devotee.findOne({ devoteeId: searchDevotee[i].rejectedBy });
+            if(rejectedByDevotee){
+                rejectedByDevoteename = rejectedByDevotee.name  ?? ""
+            }
+          }
             
             if (createdByDevotee) {
                 searchDevotee[i].createdById = createdByDevotee.name;
                 searchDevotee[i].approvedBy = approvedByDevoteename
+                searchDevotee[i].rejectedBy = rejectedByDevoteename
             }
         }
 
