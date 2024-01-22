@@ -146,6 +146,20 @@ const prasdUpdateDevotee = async (req, res) => {
     }
 };
 
+const securityCheck = async (req,res) =>{
+    let data = req.body
+    try {
+        let devotee = await allmodel.devoteemodel.findOne({devoteeCode: req.params.devoteeCode});
+        if(!devotee){
+            throw messages.NO_DEVOTEEFOUND
+        }else{
+            res.status(200).json(messages.DEVOTEE_VERIFIED)
+        }
+    } catch (error) {
+        console.log("security check error",error)
+    }
+}
+
 
 
 async function compareThreeTime(orderTime, mealStartTime, mealEndTime) {
@@ -373,16 +387,6 @@ const advanceSearchDevotee = async (req, res) => {
                 searchDevotee[i].rejectedBy = rejectedByDevoteename
             }
         }
-
-
-    //   let advanceSearch = await devotee.find({})
-    //     for (let i = 0; i < searchDevotee.length; i++) {
-    //         const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
-    //         if (createdByDevotee) {
-    //             searchDevotee[i].createdById = createdByDevotee.name;
-    //             // delete allDevotee[i].createdById; // Remove the createdById field
-    //         }
-    //     }
        
         res.status(200).json({searchDevotee})
     } catch (error) {
@@ -643,6 +647,7 @@ module.exports = {
     createRelativeDevotee,
     admin_devoteeDashboard,
     prasdUpdateDevotee,
+    securityCheck,
     devoteeListBycreatedById
 }
 
