@@ -156,6 +156,7 @@ const securityCheck = async (req,res) =>{
             res.status(200).json(messages.DEVOTEE_VERIFIED)
         }
     } catch (error) {
+        res.status(500).json(error)
         console.log("security check error",error)
     }
 }
