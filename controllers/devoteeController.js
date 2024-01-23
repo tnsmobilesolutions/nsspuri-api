@@ -67,7 +67,9 @@ const prasdUpdateDevotee = async (req, res) => {
         const devoteeDetails = await allmodel.devoteemodel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
         if (!devoteeDetails) throw messages.NO_DEVOTEEFOUND;
 
-        if(devoteeDetails.status == "blacklisted" || devoteeDetails.status == "lost" || devoteeDetails.status == "rejected") throw messages.BLACKLISTED_DEVOTEE_SCAN;
+        if(devoteeDetails.status == "blacklisted"  ) throw messages.BLACKLISTED_DEVOTEE_SCAN;
+        if( devoteeDetails.status == "rejected") throw messages.REJECTED_DEVOTEE_SCAN;
+        if(devoteeDetails.status == "lost") throw messages.LOST_DEVOTEE_SCAN;
 
         const prasadDetails = await allmodel.prasadModel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
         
