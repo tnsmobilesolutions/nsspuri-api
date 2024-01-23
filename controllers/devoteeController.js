@@ -294,9 +294,11 @@ const searchDevotee = async (req, res) => {
             searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } }).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
         }
         const totalPages = Math.ceil(count / limit);
+
         for (let i = 0; i < searchDevotee.length; i++) {
             let approvedByDevoteename = "";
             let rejectedByDevoteename = "";
+            let createdId
             const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
          if(searchDevotee[i].status== "approved"){
            let approvedByDevotee = await  devotee.findOne({ devoteeId: searchDevotee[i].approvedBy });
@@ -313,6 +315,7 @@ const searchDevotee = async (req, res) => {
           }
             
             if (createdByDevotee) {
+                searchDevotee[i].createdByUUID = createdByDevotee.createdById
                 searchDevotee[i].createdById = createdByDevotee.name;
                 searchDevotee[i].approvedBy = approvedByDevoteename
                 searchDevotee[i].rejectedBy = rejectedByDevoteename
@@ -385,6 +388,7 @@ const advanceSearchDevotee = async (req, res) => {
           }
             
             if (createdByDevotee) {
+                searchDevotee[i].createdByUUID = createdByDevotee.createdById
                 searchDevotee[i].createdById = createdByDevotee.name;
                 searchDevotee[i].approvedBy = approvedByDevoteename
                 searchDevotee[i].rejectedBy = rejectedByDevoteename
