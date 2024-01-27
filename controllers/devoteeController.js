@@ -78,7 +78,7 @@ const prasdUpdateDevotee = async (req, res) => {
 
             if (existingPrasad && existingPrasad.balyaTiming && existingPrasad.MadhyannaTiming && existingPrasad.ratriTiming) {
                 // If all timings are updated, show an error that prasad is already taken for today
-                return res.status(400).json({ error: messages.PRASAD_TAKEN, devoteeData : devoteeDetails});
+                return res.status(500).json({ error: messages.PRASAD_TAKEN, devoteeData : devoteeDetails});
             }else {
                 // Check if the current time falls within any meal timings
                 const isBalyaTime = await compareThreeTime(currentTime, process.env.balyaStartTime, process.env.balyaEndTime);
@@ -98,7 +98,7 @@ const prasdUpdateDevotee = async (req, res) => {
                     } else if (isRatraTime && !existingPrasad.ratraTiming) {
                         existingPrasad.ratraTiming = currentTime;
                     } else {
-                        return res.status(400).json({ error: messages.PRASAD_TAKEN ,devoteeData : devoteeDetails});
+                        return res.status(500).json({ error: messages.PRASAD_TAKEN ,devoteeData : devoteeDetails});
                     }
                 } else {
                     console.log("new prasad");
@@ -139,12 +139,12 @@ const prasdUpdateDevotee = async (req, res) => {
            
                 return res.status(200).json({ error: messages.SCAN_SUCCESSFULLY,devoteeData : devoteeDetails });
             } else {
-                return res.status(400).json({ error: messages.INVALID_TIME,devoteeData : devoteeDetails });
+                return res.status(500).json({ error: messages.INVALID_TIME,devoteeData : devoteeDetails });
             }
         }
     } catch (error) {
         console.log("Error: ", error);
-        return res.status(400).json({ error: error });
+        return res.status(500).json({ error: error });
     }
 };
 
