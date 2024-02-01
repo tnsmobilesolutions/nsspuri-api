@@ -486,6 +486,30 @@ async function devoteeList(status) {
         statusby = await devotee.find({status: status});
     return statusby.length;
 }
+async function countDevoteePrasadtaken(desiredDate, timeStamp) {
+    const countResult = await allmodel.prasadModel.aggregate([
+      { $unwind: '$prasad' },
+      {
+        $match: {
+          'prasad.date': desiredDate,
+          [timeStamp]: { $ne: '' },
+        },
+      },
+      {
+        $group: {
+          _id: '$devoteeId',
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalCount: { $sum: 1 },
+        },
+      },
+    ]);
+    let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+    return devoteeprasadTakenCount;
+}
 
        let allDevotee = await devotee.find().sort({name:1})
        let currentDevotee = await devotee.findById(req.user._id)
@@ -548,7 +572,70 @@ let data;
                 translate: "Lost delegate card",
                 status: "lost",
                 count: await devoteeList("lost")
-            },      
+            },    
+            {
+                title: moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),
+                message: "ବାଲ୍ୟ",
+                translate: "breakfast",
+                status: "lost",
+                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.balyaTiming")
+            },       
+            {
+                title: moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),
+                message: "ବାଲ୍ୟ",
+                translate: "breakfast",
+                status: "lost",
+                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")
+            },       
+            {
+                title: moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),
+                message: "ବାଲ୍ୟ",
+                translate: "breakfast",
+                status: "lost",
+                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")
+            },       
+            {
+                title: moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),
+                message: "ମଧ୍ୟାହ୍ନ",
+                translate: "Lunch",
+                status: "lost",
+                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.madhyanaTiming")
+            },       
+            {
+                title: moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),
+                message: "ମଧ୍ୟାହ୍ନ",
+                translate: "Lunch",
+                status: "lost",
+                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")
+            },       
+            {
+                title: moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),
+                message: "ମଧ୍ୟାହ୍ନ",
+                translate: "Lunch",
+                status: "lost",
+                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")
+            },       
+            {
+                title: moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),
+                message: "ରାତ୍ର",
+                translate: "Dinner",
+                status: "lost",
+                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.ratraTiming")
+            },       
+            {
+                title: moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),
+                message: "ରାତ୍ର",
+                translate: "Dinner",
+                status: "lost",
+                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")
+            },       
+            {
+                title: moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),
+                message: "ରାତ୍ର",
+                translate: "Dinner",
+                status: "lost",
+                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")
+            },   
             
         ]
 
