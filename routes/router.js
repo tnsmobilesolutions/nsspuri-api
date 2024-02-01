@@ -56,7 +56,10 @@ getRequest("/devotee/advance-search", devoteeController.advanceSearchDevotee);
 router.get("/login/:uid", devoteeController.devoteeLogin);
 deleteRequest("/devotee/:id", devoteeController.devotee_delete);
 getRequest("/admin/dashboard", devoteeController.admin_devoteeDashboard);
+getRequest("/prasadTakencount", devoteeController.prasadCount);
 putRequest("/prasadUpdate/:code", devoteeController.prasdUpdateDevotee);
+putRequest("/prasadTimingSetting/", devoteeController.updateSettings);
+getRequest("/prasadCountByselectdate/", devoteeController.prasadCountByselectdate);
 // getRequest("/getPrasad/:code", devoteeController.prasdUpdatedevotee);
 
 

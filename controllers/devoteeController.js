@@ -5,7 +5,8 @@ const allmodel = require("../model/allmodel");
 const e = require("express");
 const { model } = require("mongoose");
 const dotenv = require("dotenv").config();
-const messages = require("./messages/message")
+const messages = require("./messages/message");
+const settings = require("../model/settings");
 
 
 
@@ -35,13 +36,21 @@ const devotee_create = async (req, res) => {
     }
 };
 
-const getPrasadUpdate =  async() => {
-    const currentDate = moment.tz("Asia/Kolkata").format("YYYY-MM-DD");
-    const currentTime = moment.tz("Asia/Kolkata").format("HH:mm");
+const updateSettings = async (req, res) => {
+    try {
+        let data = req.body;
+        
+        let updateSettings = await allmodel.settings.findOneAndUpdate({}, { $set: data }, { upsert: true, new: true });
+        res.json({ success: true, settings: updateSettings });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, error: "Internal Server Error" });
+    }
+};
 
 
 
-}
+
 const devoteeListBycreatedById = async(req,res)=>{
   try {
     let devoteeList = await allmodel.devoteemodel.find({createdById: req.params.id})
@@ -60,6 +69,14 @@ const devoteeListBycreatedById = async(req,res)=>{
 //update prasad by qr code
 const prasdUpdateDevotee = async (req, res) => {
     let data = req.body;
+    let allTimings = await allmodel.settings.findOne();
+    console.log("allTimings-------",allTimings)
+    let balyaStartTime = allTimings.balyaStartTime
+    let balyaEndTime = allTimings.balyaEndTime
+    let madhyanaStartTime = allTimings.madhyanaStartTime
+    let madhyanaEndTime = allTimings.madhyanaEndTime
+    let ratraStartTime = allTimings.ratraStartTime
+    let ratraEndTime = allTimings.ratraEndTime
     const currentDate = data.date;
     const currentTime = data.time;
 
@@ -81,9 +98,9 @@ const prasdUpdateDevotee = async (req, res) => {
                 return res.status(500).json({ error: messages.PRASAD_TAKEN, devoteeData : devoteeDetails});
             }else {
                 // Check if the current time falls within any meal timings
-                const isBalyaTime = await compareThreeTime(currentTime, process.env.balyaStartTime, process.env.balyaEndTime);
-                const isMadhyannaTime = await compareThreeTime(currentTime, process.env.madhyanaStartTime, process.env.madhyanaEndTime);
-                const isRatraTime = await compareThreeTime(currentTime, process.env.ratraStartTime, process.env.ratraEndTime);
+                const isBalyaTime = await compareThreeTime(currentTime, balyaStartTime, balyaEndTime);
+                const isMadhyannaTime = await compareThreeTime(currentTime, madhyanaStartTime, madhyanaEndTime);
+                const isRatraTime = await compareThreeTime(currentTime, ratraStartTime, ratraEndTime);
               
                 let prasadFound = false;
 
@@ -116,7 +133,7 @@ const prasdUpdateDevotee = async (req, res) => {
                     prasadDetails.prasad.push(newPrasad);
                 }   
                 await prasadDetails.save();      
-                return res.status(200).json({ error: messages.SCAN_SUCCESSFULLY,devoteeData : devoteeDetails });
+                return res.status(200).json({ message: messages.SCAN_SUCCESSFULLY,devoteeData : devoteeDetails });
                 
             }
         } else {
@@ -463,43 +480,13 @@ const devotee_delete = async (req, res) => {
 // All Devotee or by status
 const admin_devoteeDashboard = async (req, res) => {
     try {
+        data = req.body;
 async function devoteeList(status) {
     let statusby ;
         statusby = await devotee.find({status: status});
     return statusby.length;
 }
-async function countDevoteePrasadtaken(desiredDate, timeStamp) {
-    const countResult = await allmodel.prasadModel.aggregate([
-      { $unwind: '$prasad' },
-      {
-        $match: {
-          'prasad.date': desiredDate,
-          [timeStamp]: { $ne: '' },
-        },
-      },
-      {
-        $group: {
-          _id: '$devoteeId',
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          totalCount: { $sum: 1 },
-        },
-      },
-    ]);
-  
-    console.log('countResult------', countResult);
-  
-    let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
-    return devoteeprasadTakenCount;
-  }
-  
-  
-  
 
-  
        let allDevotee = await devotee.find().sort({name:1})
        let currentDevotee = await devotee.findById(req.user._id)
 let data;
@@ -561,72 +548,7 @@ let data;
                 translate: "Lost delegate card",
                 status: "lost",
                 count: await devoteeList("lost")
-            },
-          
-          
-            {
-                title: moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),
-                message: "ବାଲ୍ୟ",
-                translate: "breakfast",
-                status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.balyaTiming")
-            },       
-            {
-                title: moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),
-                message: "ବାଲ୍ୟ",
-                translate: "breakfast",
-                status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")
-            },       
-            {
-                title: moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),
-                message: "ବାଲ୍ୟ",
-                translate: "breakfast",
-                status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")
-            },       
-            {
-                title: moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),
-                message: "ମଧ୍ୟାହ୍ନ",
-                translate: "Lunch",
-                status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.madhyanaTiming")
-            },       
-            {
-                title: moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),
-                message: "ମଧ୍ୟାହ୍ନ",
-                translate: "Lunch",
-                status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")
-            },       
-            {
-                title: moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),
-                message: "ମଧ୍ୟାହ୍ନ",
-                translate: "Lunch",
-                status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")
-            },       
-            {
-                title: moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),
-                message: "ରାତ୍ର",
-                translate: "Dinner",
-                status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.ratraTiming")
-            },       
-            {
-                title: moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),
-                message: "ରାତ୍ର",
-                translate: "Dinner",
-                status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")
-            },       
-            {
-                title: moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),
-                message: "ରାତ୍ର",
-                translate: "Dinner",
-                status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")
-            },       
+            },      
             
         ]
 
@@ -638,6 +560,165 @@ let data;
         res.status(400).json({"error":error.message});
     }
 };
+
+const prasadCount = async(req,res) =>{
+    let findPrasadDate =await allmodel.settings.find();
+    console.log("findPrasadDate------",findPrasadDate)
+   let firstDate = findPrasadDate[0].prasadFirstDate
+   let secondDate = findPrasadDate[0].prasadSecondDate
+   let thirdDate = findPrasadDate[0].prasadThirdDate
+    async function countDevoteePrasadtaken(desiredDate, timeStamp) {
+        const countResult = await allmodel.prasadModel.aggregate([
+          { $unwind: '$prasad' },
+          {
+            $match: {
+              'prasad.date': desiredDate,
+              [timeStamp]: { $ne: '' },
+            },
+          },
+          {
+            $group: {
+              _id: '$devoteeId',
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              totalCount: { $sum: 1 },
+            },
+          },
+        ]);
+        let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+        return devoteeprasadTakenCount;
+    }
+        let data = [];
+        if(firstDate){
+            data.push( {
+                title: firstDate,
+                message: "ବାଲ୍ୟ",
+                translate: "breakfast",
+                status: "lost",
+                count:   await countDevoteePrasadtaken(firstDate,"prasad.balyaTiming")
+            },  
+            {
+                title: firstDate,
+                message: "ମଧ୍ୟାହ୍ନ",
+                translate: "Lunch",
+                status: "lost",
+                count:  await countDevoteePrasadtaken(firstDate,"prasad.madhyanaTiming")
+            },       
+            {
+                title: firstDate,
+                message: "ରାତ୍ର",
+                translate: "Dinner",
+                status: "lost",
+                count:  await countDevoteePrasadtaken(firstDate,"prasad.ratraTiming")
+            }, )
+    }
+    if(secondDate){
+        data.push( {
+            title: secondDate,
+            message: "ବାଲ୍ୟ",
+            translate: "breakfast",
+            status: "lost",
+            count:   await countDevoteePrasadtaken(secondDate,"prasad.balyaTiming")
+        },  
+        {
+            title: secondDate,
+            message: "ମଧ୍ୟାହ୍ନ",
+            translate: "Lunch",
+            status: "lost",
+            count:  await countDevoteePrasadtaken(secondDate,"prasad.madhyanaTiming")
+        },       
+        {
+            title: secondDate,
+            message: "ରାତ୍ର",
+            translate: "Dinner",
+            status: "lost",
+            count:  await countDevoteePrasadtaken(secondDate,"prasad.ratraTiming")
+        }, )
+}
+    if(thirdDate){
+        data.push( {
+            title: thirdDate,
+            message: "ବାଲ୍ୟ",
+            translate: "breakfast",
+            status: "lost",
+            count:   await countDevoteePrasadtaken(thirdDate,"prasad.balyaTiming")
+        },  
+        {
+            title: thirdDate,
+            message: "ମଧ୍ୟାହ୍ନ",
+            translate: "Lunch",
+            status: "lost",
+            count:  await countDevoteePrasadtaken(thirdDate,"prasad.madhyanaTiming")
+        },       
+        {
+            title: thirdDate,
+            message: "ରାତ୍ର",
+            translate: "Dinner",
+            status: "lost",
+            count:  await countDevoteePrasadtaken(thirdDate,"prasad.ratraTiming")
+        }, )
+}
+        res.status(200).json(data) ;
+      }
+
+
+const prasadCountByselectdate = async(req,res)=>{
+  let data= []
+    async function countDevoteePrasadtaken(desiredDate, timeStamp) {
+    const countResult = await allmodel.prasadModel.aggregate([
+        { $unwind: '$prasad' },
+        {
+          $match: {
+            'prasad.date': desiredDate,
+            [timeStamp]: { $ne: '' },
+          },
+        },
+        {
+          $group: {
+            _id: '$devoteeId',
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalCount: { $sum: 1 },
+          },
+        },
+      ]);
+      let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+      return devoteeprasadTakenCount;
+     
+    }
+   
+         data =  [{
+              title: req.query.date,
+              message: "ବାଲ୍ୟ",
+              translate: "breakfast",
+              status: "lost",
+              count:   await countDevoteePrasadtaken(req.query.date ,"prasad.balyaTiming")
+          },  
+          {
+              title: req.query.date,
+              message: "ମଧ୍ୟାହ୍ନ",
+              translate: "Lunch",
+              status: "lost",
+              count:  await countDevoteePrasadtaken(req.query.date,"prasad.madhyanaTiming")
+          },       
+          {
+              title: req.query.date,
+              message: "ରାତ୍ର",
+              translate: "Dinner",
+              status: "lost",
+              count:  await countDevoteePrasadtaken(req.query.date,"prasad.ratraTiming")
+          }, ]
+          res.status(200).json(data);
+  }
+
+    
+
 
 
 module.exports = {
@@ -655,7 +736,10 @@ module.exports = {
     admin_devoteeDashboard,
     prasdUpdateDevotee,
     securityCheck,
-    devoteeListBycreatedById
+    devoteeListBycreatedById,
+    prasadCount,
+    updateSettings,
+    prasadCountByselectdate
 }
 
 //
