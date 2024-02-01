@@ -480,7 +480,7 @@ const devotee_delete = async (req, res) => {
 // All Devotee or by status
 const admin_devoteeDashboard = async (req, res) => {
     try {
-        data = req.body;
+ 
 async function devoteeList(status) {
     let statusby ;
         statusby = await devotee.find({status: status});
