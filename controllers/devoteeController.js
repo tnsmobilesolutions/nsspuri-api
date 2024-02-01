@@ -348,44 +348,65 @@ const searchDevotee = async (req, res) => {
 // advance search Devotee with Relatives
 const advanceSearchDevotee = async (req, res) => {
     let searchDevotee;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5000;
+    const numberofskipdata = (page - 1) * limit;
+    let count
     try {
         if(req.query.advanceStatus){
             if(req.query.sangha){
-                searchDevotee = await devotee.find({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1});
+                searchDevotee = await devotee.find({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' },status: req.query.advanceStatus}) 
             }else if(req.query.status){
-                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:-1})
+                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({status: {"$regex": `${req.query.status}`, '$options': 'i' }})
             }else if(req.query.bloodGroup){
-                searchDevotee = await devotee.find({bloodGroup: req.query.bloodGroup,status: req.query.advanceStatus}).sort({devoteeCode:-1})
+                searchDevotee = await devotee.find({bloodGroup: req.query.bloodGroup,status: req.query.advanceStatus}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({bloodGroup: req.query.bloodGroup,status: req.query.advanceStatus})
             }else if(req.query.gender){
-                searchDevotee = await devotee.find({gender: req.query.gender,status: req.query.advanceStatus }).sort({devoteeCode:-1})
+                searchDevotee = await devotee.find({gender: req.query.gender,status: req.query.advanceStatus }).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({gender: req.query.gender,status: req.query.advanceStatus }) 
             }else if(req.query.mobileNumber){
-                searchDevotee = await devotee.find({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1})
+                searchDevotee = await devotee.find({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' },status: req.query.advanceStatus}); 
             }else if(req.query.emailId){
-                searchDevotee = await devotee.find({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1})
+                searchDevotee = await devotee.find({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' },status: req.query.advanceStatus})
             }else if(req.query.name){
-                searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1})
+                searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({name: {"$regex": `${req.query.name}`, '$options': 'i' },status: req.query.advanceStatus})
             }else if(req.query.devoteeCode){
-                searchDevotee = await devotee.find({devoteeCode:req.query.devoteeCode,status: req.query.advanceStatus}).sort({devoteeCode:-1})
+                searchDevotee = await devotee.find({devoteeCode:req.query.devoteeCode,status: req.query.advanceStatus}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({devoteeCode:req.query.devoteeCode,status: req.query.advanceStatus})
             }
         }else{
             if(req.query.sangha){
-                searchDevotee = await devotee.find({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({devoteeCode:1});
+                searchDevotee = await devotee.find({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({devoteeCode:1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' }})
             }else if(req.query.status){
-                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:1})
+                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({status: {"$regex": `${req.query.status}`, '$options': 'i' }})
             }else if(req.query.bloodGroup){
-                searchDevotee = await devotee.find({bloodGroup: req.query.bloodGroup}).sort({devoteeCode:1})
+                searchDevotee = await devotee.find({bloodGroup: req.query.bloodGroup}).sort({devoteeCode:1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({bloodGroup: req.query.bloodGroup})
             }else if(req.query.gender){
-                searchDevotee = await devotee.find({gender: req.query.gender }).sort({devoteeCode:1})
+                searchDevotee = await devotee.find({gender: req.query.gender }).sort({devoteeCode:1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({gender: req.query.gender })
             }else if(req.query.mobileNumber){
-                searchDevotee = await devotee.find({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' }}).sort({devoteeCode:1})
+                searchDevotee = await devotee.find({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' }}).sort({devoteeCode:1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' }})
             }else if(req.query.emailId){
-                searchDevotee = await devotee.find({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' }}).sort({devoteeCode:1})
+                searchDevotee = await devotee.find({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' }}).sort({devoteeCode:1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' }})
             }else if(req.query.name){
-                searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' }}).sort({devoteeCode:1})
+                searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' }}).sort({devoteeCode:1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({name: {"$regex": `${req.query.name}`, '$options': 'i' }})
             }else if(req.query.devoteeCode){
-                searchDevotee = await devotee.find({devoteeCode: req.query.devoteeCode}).sort({devoteeCode:1})
+                searchDevotee = await devotee.find({devoteeCode: req.query.devoteeCode}).sort({devoteeCode:1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({devoteeCode: req.query.devoteeCode})
             }
         }
+        const totalPages = Math.ceil(count / limit);
         for (let i = 0; i < searchDevotee.length; i++) {
             let approvedByDevoteename = "";
             let rejectedByDevoteename = "";
@@ -412,7 +433,7 @@ const advanceSearchDevotee = async (req, res) => {
             }
         }
        
-        res.status(200).json({searchDevotee})
+        res.status(200).json({searchDevotee,count,totalPages,page})
     } catch (error) {
         console.log(error);
         res.status(400).json({"error":error.message});
