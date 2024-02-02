@@ -95,7 +95,7 @@ const prasdUpdateDevotee = async (req, res) => {
 
             if (existingPrasad && existingPrasad.balyaTiming && existingPrasad.MadhyannaTiming && existingPrasad.ratriTiming) {
                 // If all timings are updated, show an error that prasad is already taken for today
-                return res.status(500).json({ error: messages.PRASAD_TAKEN, devoteeData : devoteeDetails});
+                return res.status(200).json({ error: messages.PRASAD_TAKEN, devoteeData : devoteeDetails});
             }else {
                 // Check if the current time falls within any meal timings
                 const isBalyaTime = await compareThreeTime(currentTime, balyaStartTime, balyaEndTime);
