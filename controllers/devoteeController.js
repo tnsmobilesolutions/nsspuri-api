@@ -47,6 +47,15 @@ const updateSettings = async (req, res) => {
         res.status(500).json({ success: false, error: "Internal Server Error" });
     }
 };
+const getSettings = async (req, res) => {
+    try {
+        let updateSettings = await allmodel.settings.findOne({});
+        res.json(updateSettings);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, error: "Internal Server Error" });
+    }
+};
 
 
 
@@ -855,7 +864,8 @@ module.exports = {
     devoteeListBycreatedById,
     prasadCount,
     updateSettings,
-    prasadCountByselectdate
+    prasadCountByselectdate,
+    getSettings
 }
 
 //

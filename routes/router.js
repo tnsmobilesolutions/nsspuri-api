@@ -59,6 +59,7 @@ getRequest("/admin/dashboard", devoteeController.admin_devoteeDashboard);
 getRequest("/prasadTakencount", devoteeController.prasadCount);
 putRequest("/prasadUpdate/:code", devoteeController.prasdUpdateDevotee);
 putRequest("/prasadTimingSetting/", devoteeController.updateSettings);
+getRequest("/prasadTimingSetting/", devoteeController.getSettings);
 getRequest("/prasadCountByselectdate/", devoteeController.prasadCountByselectdate);
 // getRequest("/getPrasad/:code", devoteeController.prasdUpdatedevotee);
 
