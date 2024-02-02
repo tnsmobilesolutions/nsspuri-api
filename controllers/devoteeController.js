@@ -115,7 +115,7 @@ const prasdUpdateDevotee = async (req, res) => {
                     } else if (isRatraTime && !existingPrasad.ratraTiming) {
                         existingPrasad.ratraTiming = currentTime;
                     } else {
-                        return res.status(500).json({ error: messages.PRASAD_TAKEN ,devoteeData : devoteeDetails});
+                        return res.status(200).json({ error: messages.PRASAD_TAKEN ,devoteeData : devoteeDetails});
                     }
                 } else {
                     console.log("new prasad");
@@ -156,7 +156,7 @@ const prasdUpdateDevotee = async (req, res) => {
            
                 return res.status(200).json({ error: messages.SCAN_SUCCESSFULLY,devoteeData : devoteeDetails });
             } else {
-                return res.status(500).json({ error: messages.INVALID_TIME,devoteeData : devoteeDetails });
+                return res.status(200).json({ error: messages.INVALID_TIME,devoteeData : devoteeDetails });
             }
         }
     } catch (error) {
