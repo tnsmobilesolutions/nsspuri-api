@@ -6,6 +6,7 @@ NO_DEVOTEEFOUND : "No devotee found with this devoteeCode !",
 BLACKLISTED_DEVOTEE_SCAN : "Blacklisted Devotee !",
 REJECTED_DEVOTEE_SCAN : "Rejected Devotee !",
 LOST_DEVOTEE_SCAN : "Lost Devotee !",
+WITHDRAWN_DEVOTEE_SCAN : "withdrawn Devotee !",
 PRASAD_TAKEN: "Prasad already taken !",
 INVALID_TIME: "Prasad cannot be served at this time !" 
 }

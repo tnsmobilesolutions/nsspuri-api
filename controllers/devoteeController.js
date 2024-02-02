@@ -87,6 +87,7 @@ const prasdUpdateDevotee = async (req, res) => {
         if(devoteeDetails.status == "blacklisted"  ) {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.BLACKLISTED_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
         if( devoteeDetails.status == "rejected") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.REJECTED_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
         if(devoteeDetails.status == "lost") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.LOST_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
+        if(devoteeDetails.status == "withdrawn") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.WITHDRAWN_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
 
         const prasadDetails = await allmodel.prasadModel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
         
