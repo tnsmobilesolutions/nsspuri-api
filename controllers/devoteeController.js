@@ -82,11 +82,11 @@ const prasdUpdateDevotee = async (req, res) => {
 
     try {
         const devoteeDetails = await allmodel.devoteemodel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
-        if (!devoteeDetails) throw messages.NO_DEVOTEEFOUND;
+        if (!devoteeDetails) {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.NO_DEVOTEEFOUND}, devoteeData : devoteeDetails});} 
 
-        if(devoteeDetails.status == "blacklisted"  ) throw messages.BLACKLISTED_DEVOTEE_SCAN;
-        if( devoteeDetails.status == "rejected") throw messages.REJECTED_DEVOTEE_SCAN;
-        if(devoteeDetails.status == "lost") throw messages.LOST_DEVOTEE_SCAN;
+        if(devoteeDetails.status == "blacklisted"  ) {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.BLACKLISTED_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
+        if( devoteeDetails.status == "rejected") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.REJECTED_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
+        if(devoteeDetails.status == "lost") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.LOST_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
 
         const prasadDetails = await allmodel.prasadModel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
         
@@ -95,7 +95,7 @@ const prasdUpdateDevotee = async (req, res) => {
 
             if (existingPrasad && existingPrasad.balyaTiming && existingPrasad.MadhyannaTiming && existingPrasad.ratriTiming) {
                 // If all timings are updated, show an error that prasad is already taken for today
-                return res.status(200).json({ error: messages.PRASAD_TAKEN, devoteeData : devoteeDetails});
+                return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN}, devoteeData : devoteeDetails});
             }else {
                 // Check if the current time falls within any meal timings
                 const isBalyaTime = await compareThreeTime(currentTime, balyaStartTime, balyaEndTime);
@@ -115,7 +115,7 @@ const prasdUpdateDevotee = async (req, res) => {
                     } else if (isRatraTime && !existingPrasad.ratraTiming) {
                         existingPrasad.ratraTiming = currentTime;
                     } else {
-                        return res.status(200).json({ error: messages.PRASAD_TAKEN ,devoteeData : devoteeDetails});
+                        return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN} ,devoteeData : devoteeDetails});
                     }
                 } else {
                     console.log("new prasad");
@@ -132,8 +132,9 @@ const prasdUpdateDevotee = async (req, res) => {
                     }
                     prasadDetails.prasad.push(newPrasad);
                 }   
-                await prasadDetails.save();      
-                return res.status(200).json({ message: messages.SCAN_SUCCESSFULLY,devoteeData : devoteeDetails });
+                await prasadDetails.save(); 
+                return res.status(200).json({ status: "Success",message: messages.SCAN_SUCCESSFULLY,error: null,devoteeData : devoteeDetails});
+               
                 
             }
         } else {
@@ -153,10 +154,11 @@ const prasdUpdateDevotee = async (req, res) => {
                     ratraTiming: isRatraTime ? currentTime : ''
                 }]};
                await allmodel.prasadModel.create(prasadData);
-           
-                return res.status(200).json({ error: messages.SCAN_SUCCESSFULLY,devoteeData : devoteeDetails });
+               return res.status(200).json({ status: "Failure",message: messages.SCAN_SUCCESSFULLY ,error: null ,devoteeData : devoteeDetails});
+                // return res.status(200).json({ error: messages.SCAN_SUCCESSFULLY,devoteeData : devoteeDetails });
             } else {
-                return res.status(200).json({ error: messages.INVALID_TIME,devoteeData : devoteeDetails });
+                return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.INVALID_TIME} ,devoteeData : devoteeDetails});
+                // return res.status(200).json({ error: messages.INVALID_TIME,devoteeData : devoteeDetails });
             }
         }
     } catch (error) {
