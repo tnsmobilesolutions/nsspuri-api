@@ -47,6 +47,7 @@ postRequest("/devotee/relative", devoteeController.createRelativeDevotee);
 putRequest("/devotee/:id", devoteeController.devotee_update);
 getRequest("/devotee", devoteeController.devotee_all);
 getRequest("/devotee/currentUser", devoteeController.devotee_details);
+getRequest("/verifyDevotee/:devoteeCode", devoteeController.securityCheck);
 getRequest("/devotee/relatives", devoteeController.devotee_with_relatives);
 getRequest("/devoteeById/:id", devoteeController.devotee_details_by_devoteeId);
 getRequest("/devoteeListBycreatedById/:id", devoteeController.devoteeListBycreatedById);
@@ -55,7 +56,11 @@ getRequest("/devotee/advance-search", devoteeController.advanceSearchDevotee);
 router.get("/login/:uid", devoteeController.devoteeLogin);
 deleteRequest("/devotee/:id", devoteeController.devotee_delete);
 getRequest("/admin/dashboard", devoteeController.admin_devoteeDashboard);
+getRequest("/prasadTakencount", devoteeController.prasadCount);
 putRequest("/prasadUpdate/:code", devoteeController.prasdUpdateDevotee);
+putRequest("/prasadTimingSetting/", devoteeController.updateSettings);
+getRequest("/prasadTimingSetting/", devoteeController.getSettings);
+getRequest("/prasadCountByselectdate/", devoteeController.prasadCountByselectdate);
 // getRequest("/getPrasad/:code", devoteeController.prasdUpdatedevotee);
 
 

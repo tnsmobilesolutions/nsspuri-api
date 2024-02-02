@@ -5,7 +5,8 @@ const allmodel = require("../model/allmodel");
 const e = require("express");
 const { model } = require("mongoose");
 const dotenv = require("dotenv").config();
-const messages = require("./messages/message")
+const messages = require("./messages/message");
+const settings = require("../model/settings");
 
 
 
@@ -35,13 +36,30 @@ const devotee_create = async (req, res) => {
     }
 };
 
-const getPrasadUpdate =  async() => {
-    const currentDate = moment.tz("Asia/Kolkata").format("YYYY-MM-DD");
-    const currentTime = moment.tz("Asia/Kolkata").format("HH:mm");
+const updateSettings = async (req, res) => {
+    try {
+        let data = req.body;
+        
+        let updateSettings = await allmodel.settings.findOneAndUpdate({}, { $set: data }, { upsert: true, new: true });
+        res.json({ success: true, settings: updateSettings });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, error: "Internal Server Error" });
+    }
+};
+const getSettings = async (req, res) => {
+    try {
+        let updateSettings = await allmodel.settings.findOne({});
+        res.json(updateSettings);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, error: "Internal Server Error" });
+    }
+};
 
 
 
-}
+
 const devoteeListBycreatedById = async(req,res)=>{
   try {
     let devoteeList = await allmodel.devoteemodel.find({createdById: req.params.id})
@@ -60,14 +78,25 @@ const devoteeListBycreatedById = async(req,res)=>{
 //update prasad by qr code
 const prasdUpdateDevotee = async (req, res) => {
     let data = req.body;
+    let allTimings = await allmodel.settings.findOne();
+    console.log("allTimings-------",allTimings)
+    let balyaStartTime = allTimings.balyaStartTime
+    let balyaEndTime = allTimings.balyaEndTime
+    let madhyanaStartTime = allTimings.madhyanaStartTime
+    let madhyanaEndTime = allTimings.madhyanaEndTime
+    let ratraStartTime = allTimings.ratraStartTime
+    let ratraEndTime = allTimings.ratraEndTime
     const currentDate = data.date;
     const currentTime = data.time;
 
     try {
         const devoteeDetails = await allmodel.devoteemodel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
-        if (!devoteeDetails) throw messages.NO_DEVOTEEFOUND;
+        if (!devoteeDetails) {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.NO_DEVOTEEFOUND}, devoteeData : devoteeDetails});} 
 
-        if(devoteeDetails.status == "blacklisted" || devoteeDetails.status == "lost" || devoteeDetails.status == "rejected") throw messages.BLACKLISTED_DEVOTEE_SCAN;
+        if(devoteeDetails.status == "blacklisted"  ) {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.BLACKLISTED_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
+        if( devoteeDetails.status == "rejected") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.REJECTED_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
+        if(devoteeDetails.status == "lost") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.LOST_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
+        if(devoteeDetails.status == "withdrawn") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.WITHDRAWN_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
 
         const prasadDetails = await allmodel.prasadModel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
         
@@ -76,12 +105,12 @@ const prasdUpdateDevotee = async (req, res) => {
 
             if (existingPrasad && existingPrasad.balyaTiming && existingPrasad.MadhyannaTiming && existingPrasad.ratriTiming) {
                 // If all timings are updated, show an error that prasad is already taken for today
-                return res.status(400).json({ error: messages.PRASAD_TAKEN, devoteeData : devoteeDetails});
+                return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN}, devoteeData : devoteeDetails});
             }else {
                 // Check if the current time falls within any meal timings
-                const isBalyaTime = await compareThreeTime(currentTime, process.env.balyaStartTime, process.env.balyaEndTime);
-                const isMadhyannaTime = await compareThreeTime(currentTime, process.env.madhyanaStartTime, process.env.madhyanaEndTime);
-                const isRatraTime = await compareThreeTime(currentTime, process.env.ratraStartTime, process.env.ratraEndTime);
+                const isBalyaTime = await compareThreeTime(currentTime, balyaStartTime, balyaEndTime);
+                const isMadhyannaTime = await compareThreeTime(currentTime, madhyanaStartTime, madhyanaEndTime);
+                const isRatraTime = await compareThreeTime(currentTime, ratraStartTime, ratraEndTime);
               
                 let prasadFound = false;
 
@@ -96,7 +125,7 @@ const prasdUpdateDevotee = async (req, res) => {
                     } else if (isRatraTime && !existingPrasad.ratraTiming) {
                         existingPrasad.ratraTiming = currentTime;
                     } else {
-                        return res.status(400).json({ error: messages.PRASAD_TAKEN ,devoteeData : devoteeDetails});
+                        return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN} ,devoteeData : devoteeDetails});
                     }
                 } else {
                     console.log("new prasad");
@@ -113,8 +142,9 @@ const prasdUpdateDevotee = async (req, res) => {
                     }
                     prasadDetails.prasad.push(newPrasad);
                 }   
-                await prasadDetails.save();      
-                return res.status(200).json({ error: messages.SCAN_SUCCESSFULLY,devoteeData : devoteeDetails });
+                await prasadDetails.save(); 
+                return res.status(200).json({ status: "Success",message: messages.SCAN_SUCCESSFULLY,error: null,devoteeData : devoteeDetails});
+               
                 
             }
         } else {
@@ -134,17 +164,33 @@ const prasdUpdateDevotee = async (req, res) => {
                     ratraTiming: isRatraTime ? currentTime : ''
                 }]};
                await allmodel.prasadModel.create(prasadData);
-           
-                return res.status(200).json({ error: messages.SCAN_SUCCESSFULLY,devoteeData : devoteeDetails });
+               return res.status(200).json({ status: "Failure",message: messages.SCAN_SUCCESSFULLY ,error: null ,devoteeData : devoteeDetails});
+                // return res.status(200).json({ error: messages.SCAN_SUCCESSFULLY,devoteeData : devoteeDetails });
             } else {
-                return res.status(400).json({ error: messages.INVALID_TIME,devoteeData : devoteeDetails });
+                return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.INVALID_TIME} ,devoteeData : devoteeDetails});
+                // return res.status(200).json({ error: messages.INVALID_TIME,devoteeData : devoteeDetails });
             }
         }
     } catch (error) {
         console.log("Error: ", error);
-        return res.status(400).json({ error: error });
+        return res.status(500).json({ error: error });
     }
 };
+
+const securityCheck = async (req,res) =>{
+    let data = req.body
+    try {
+        let devotee = await allmodel.devoteemodel.findOne({devoteeCode: req.params.devoteeCode});
+        if(!devotee){
+            throw messages.NO_DEVOTEEFOUND
+        }else{
+            res.status(200).json(messages.DEVOTEE_VERIFIED)
+        }
+    } catch (error) {
+        res.status(500).json(error)
+        console.log("security check error",error)
+    }
+}
 
 
 
@@ -277,9 +323,11 @@ const searchDevotee = async (req, res) => {
             searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } }).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
         }
         const totalPages = Math.ceil(count / limit);
+
         for (let i = 0; i < searchDevotee.length; i++) {
             let approvedByDevoteename = "";
             let rejectedByDevoteename = "";
+            let createdId
             const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
          if(searchDevotee[i].status== "approved"){
            let approvedByDevotee = await  devotee.findOne({ devoteeId: searchDevotee[i].approvedBy });
@@ -296,6 +344,7 @@ const searchDevotee = async (req, res) => {
           }
             
             if (createdByDevotee) {
+                searchDevotee[i].createdByUUID = createdByDevotee.createdById
                 searchDevotee[i].createdById = createdByDevotee.name;
                 searchDevotee[i].approvedBy = approvedByDevoteename
                 searchDevotee[i].rejectedBy = rejectedByDevoteename
@@ -311,44 +360,65 @@ const searchDevotee = async (req, res) => {
 // advance search Devotee with Relatives
 const advanceSearchDevotee = async (req, res) => {
     let searchDevotee;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5000;
+    const numberofskipdata = (page - 1) * limit;
+    let count
     try {
         if(req.query.advanceStatus){
             if(req.query.sangha){
-                searchDevotee = await devotee.find({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1});
+                searchDevotee = await devotee.find({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' },status: req.query.advanceStatus}) 
             }else if(req.query.status){
-                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:-1})
+                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({status: {"$regex": `${req.query.status}`, '$options': 'i' }})
             }else if(req.query.bloodGroup){
-                searchDevotee = await devotee.find({bloodGroup: req.query.bloodGroup,status: req.query.advanceStatus}).sort({devoteeCode:-1})
+                searchDevotee = await devotee.find({bloodGroup: req.query.bloodGroup,status: req.query.advanceStatus}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({bloodGroup: req.query.bloodGroup,status: req.query.advanceStatus})
             }else if(req.query.gender){
-                searchDevotee = await devotee.find({gender: req.query.gender,status: req.query.advanceStatus }).sort({devoteeCode:-1})
+                searchDevotee = await devotee.find({gender: req.query.gender,status: req.query.advanceStatus }).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({gender: req.query.gender,status: req.query.advanceStatus }) 
             }else if(req.query.mobileNumber){
-                searchDevotee = await devotee.find({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1})
+                searchDevotee = await devotee.find({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' },status: req.query.advanceStatus}); 
             }else if(req.query.emailId){
-                searchDevotee = await devotee.find({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1})
+                searchDevotee = await devotee.find({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' },status: req.query.advanceStatus})
             }else if(req.query.name){
-                searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1})
+                searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' },status: req.query.advanceStatus}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({name: {"$regex": `${req.query.name}`, '$options': 'i' },status: req.query.advanceStatus})
             }else if(req.query.devoteeCode){
-                searchDevotee = await devotee.find({devoteeCode:req.query.devoteeCode,status: req.query.advanceStatus}).sort({devoteeCode:-1})
+                searchDevotee = await devotee.find({devoteeCode:req.query.devoteeCode,status: req.query.advanceStatus}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({devoteeCode:req.query.devoteeCode,status: req.query.advanceStatus})
             }
         }else{
             if(req.query.sangha){
-                searchDevotee = await devotee.find({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({devoteeCode:1});
+                searchDevotee = await devotee.find({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({devoteeCode:1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' }})
             }else if(req.query.status){
-                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:1})
+                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({status: {"$regex": `${req.query.status}`, '$options': 'i' }})
             }else if(req.query.bloodGroup){
-                searchDevotee = await devotee.find({bloodGroup: req.query.bloodGroup}).sort({devoteeCode:1})
+                searchDevotee = await devotee.find({bloodGroup: req.query.bloodGroup}).sort({devoteeCode:1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({bloodGroup: req.query.bloodGroup})
             }else if(req.query.gender){
-                searchDevotee = await devotee.find({gender: req.query.gender }).sort({devoteeCode:1})
+                searchDevotee = await devotee.find({gender: req.query.gender }).sort({devoteeCode:1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({gender: req.query.gender })
             }else if(req.query.mobileNumber){
-                searchDevotee = await devotee.find({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' }}).sort({devoteeCode:1})
+                searchDevotee = await devotee.find({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' }}).sort({devoteeCode:1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({mobileNumber: {"$regex": `${req.query.mobileNumber}`, '$options': 'i' }})
             }else if(req.query.emailId){
-                searchDevotee = await devotee.find({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' }}).sort({devoteeCode:1})
+                searchDevotee = await devotee.find({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' }}).sort({devoteeCode:1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({emailId: {"$regex": `${req.query.emailId}`, '$options': 'i' }})
             }else if(req.query.name){
-                searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' }}).sort({devoteeCode:1})
+                searchDevotee = await devotee.find({name: {"$regex": `${req.query.name}`, '$options': 'i' }}).sort({devoteeCode:1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({name: {"$regex": `${req.query.name}`, '$options': 'i' }})
             }else if(req.query.devoteeCode){
-                searchDevotee = await devotee.find({devoteeCode: req.query.devoteeCode}).sort({devoteeCode:1})
+                searchDevotee = await devotee.find({devoteeCode: req.query.devoteeCode}).sort({devoteeCode:1}).skip(numberofskipdata).limit(limit); 
+                count = await devotee.countDocuments({devoteeCode: req.query.devoteeCode})
             }
         }
+        const totalPages = Math.ceil(count / limit);
         for (let i = 0; i < searchDevotee.length; i++) {
             let approvedByDevoteename = "";
             let rejectedByDevoteename = "";
@@ -368,23 +438,14 @@ const advanceSearchDevotee = async (req, res) => {
           }
             
             if (createdByDevotee) {
+                searchDevotee[i].createdByUUID = createdByDevotee.createdById
                 searchDevotee[i].createdById = createdByDevotee.name;
                 searchDevotee[i].approvedBy = approvedByDevoteename
                 searchDevotee[i].rejectedBy = rejectedByDevoteename
             }
         }
-
-
-    //   let advanceSearch = await devotee.find({})
-    //     for (let i = 0; i < searchDevotee.length; i++) {
-    //         const createdByDevotee = await devotee.findOne({ devoteeId: searchDevotee[i].createdById });
-    //         if (createdByDevotee) {
-    //             searchDevotee[i].createdById = createdByDevotee.name;
-    //             // delete allDevotee[i].createdById; // Remove the createdById field
-    //         }
-    //     }
        
-        res.status(200).json({searchDevotee})
+        res.status(200).json({searchDevotee,count,totalPages,page})
     } catch (error) {
         console.log(error);
         res.status(400).json({"error":error.message});
@@ -424,9 +485,7 @@ if(data.status == "rejected"){
 }
 let oldDevoteeData = await devotee.findOne({devoteeId: req.params.id});
 if(!oldDevoteeData) throw messages.NO_DEVOTEEFOUND
-if(oldDevoteeData.status == "rejected"){
-    data.status= "dataSubmitted"
-}
+
 data.updatedbyId = currentDevotee.devoteeId;
 data.updatedOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
 
@@ -452,6 +511,12 @@ const devotee_delete = async (req, res) => {
 // All Devotee or by status
 const admin_devoteeDashboard = async (req, res) => {
     try {
+        let findPrasadDate =await allmodel.settings.find();
+        console.log("findPrasadDate------",findPrasadDate)
+       let firstDate = findPrasadDate[0].prasadFirstDate
+       let secondDate = findPrasadDate[0].prasadSecondDate
+       let thirdDate = findPrasadDate[0].prasadThirdDate
+ 
 async function devoteeList(status) {
     let statusby ;
         statusby = await devotee.find({status: status});
@@ -478,17 +543,10 @@ async function countDevoteePrasadtaken(desiredDate, timeStamp) {
         },
       },
     ]);
-  
-    console.log('countResult------', countResult);
-  
     let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
     return devoteeprasadTakenCount;
-  }
-  
-  
-  
+}
 
-  
        let allDevotee = await devotee.find().sort({name:1})
        let currentDevotee = await devotee.findById(req.user._id)
 let data;
@@ -550,72 +608,70 @@ let data;
                 translate: "Lost delegate card",
                 status: "lost",
                 count: await devoteeList("lost")
-            },
-          
-          
+            },    
             {
-                title: moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),
+                title: firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),
                 message: "ବାଲ୍ୟ",
                 translate: "breakfast",
                 status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.balyaTiming")
+                count: await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.balyaTiming")
             },       
             {
-                title: moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),
+                title: secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),
                 message: "ବାଲ୍ୟ",
                 translate: "breakfast",
                 status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")
+                count: await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")
             },       
             {
-                title: moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),
+                title: thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),
                 message: "ବାଲ୍ୟ",
                 translate: "breakfast",
                 status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")
+                count: await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")
             },       
             {
-                title: moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),
+                title: firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),
                 message: "ମଧ୍ୟାହ୍ନ",
                 translate: "Lunch",
                 status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.madhyanaTiming")
+                count: await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.madhyanaTiming")
             },       
             {
-                title: moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),
+                title: secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),
                 message: "ମଧ୍ୟାହ୍ନ",
                 translate: "Lunch",
                 status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")
+                count: await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")
             },       
             {
-                title: moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),
+                title: thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),
                 message: "ମଧ୍ୟାହ୍ନ",
                 translate: "Lunch",
                 status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")
+                count: await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")
             },       
             {
-                title: moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),
+                title: firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),
                 message: "ରାତ୍ର",
                 translate: "Dinner",
                 status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.ratraTiming")
+                count: await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.ratraTiming")
             },       
             {
-                title: moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),
+                title: secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),
                 message: "ରାତ୍ର",
                 translate: "Dinner",
                 status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")
+                count: await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")
             },       
             {
-                title: moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),
+                title: thirdDate ||moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),
                 message: "ରାତ୍ର",
                 translate: "Dinner",
                 status: "lost",
-                count: await countDevoteePrasadtaken(moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")
-            },       
+                count: await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")
+            },   
             
         ]
 
@@ -627,6 +683,165 @@ let data;
         res.status(400).json({"error":error.message});
     }
 };
+
+const prasadCount = async(req,res) =>{
+    let findPrasadDate =await allmodel.settings.find();
+    console.log("findPrasadDate------",findPrasadDate)
+   let firstDate = findPrasadDate[0].prasadFirstDate
+   let secondDate = findPrasadDate[0].prasadSecondDate
+   let thirdDate = findPrasadDate[0].prasadThirdDate
+    async function countDevoteePrasadtaken(desiredDate, timeStamp) {
+        const countResult = await allmodel.prasadModel.aggregate([
+          { $unwind: '$prasad' },
+          {
+            $match: {
+              'prasad.date': desiredDate,
+              [timeStamp]: { $ne: '' },
+            },
+          },
+          {
+            $group: {
+              _id: '$devoteeId',
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              totalCount: { $sum: 1 },
+            },
+          },
+        ]);
+        let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+        return devoteeprasadTakenCount;
+    }
+        let data = [];
+        if(firstDate){
+            data.push( {
+                title: firstDate,
+                message: "ବାଲ୍ୟ",
+                translate: "breakfast",
+                status: "lost",
+                count:   await countDevoteePrasadtaken(firstDate,"prasad.balyaTiming")
+            },  
+            {
+                title: firstDate,
+                message: "ମଧ୍ୟାହ୍ନ",
+                translate: "Lunch",
+                status: "lost",
+                count:  await countDevoteePrasadtaken(firstDate,"prasad.madhyanaTiming")
+            },       
+            {
+                title: firstDate,
+                message: "ରାତ୍ର",
+                translate: "Dinner",
+                status: "lost",
+                count:  await countDevoteePrasadtaken(firstDate,"prasad.ratraTiming")
+            }, )
+    }
+    if(secondDate){
+        data.push( {
+            title: secondDate,
+            message: "ବାଲ୍ୟ",
+            translate: "breakfast",
+            status: "lost",
+            count:   await countDevoteePrasadtaken(secondDate,"prasad.balyaTiming")
+        },  
+        {
+            title: secondDate,
+            message: "ମଧ୍ୟାହ୍ନ",
+            translate: "Lunch",
+            status: "lost",
+            count:  await countDevoteePrasadtaken(secondDate,"prasad.madhyanaTiming")
+        },       
+        {
+            title: secondDate,
+            message: "ରାତ୍ର",
+            translate: "Dinner",
+            status: "lost",
+            count:  await countDevoteePrasadtaken(secondDate,"prasad.ratraTiming")
+        }, )
+}
+    if(thirdDate){
+        data.push( {
+            title: thirdDate,
+            message: "ବାଲ୍ୟ",
+            translate: "breakfast",
+            status: "lost",
+            count:   await countDevoteePrasadtaken(thirdDate,"prasad.balyaTiming")
+        },  
+        {
+            title: thirdDate,
+            message: "ମଧ୍ୟାହ୍ନ",
+            translate: "Lunch",
+            status: "lost",
+            count:  await countDevoteePrasadtaken(thirdDate,"prasad.madhyanaTiming")
+        },       
+        {
+            title: thirdDate,
+            message: "ରାତ୍ର",
+            translate: "Dinner",
+            status: "lost",
+            count:  await countDevoteePrasadtaken(thirdDate,"prasad.ratraTiming")
+        }, )
+}
+        res.status(200).json(data) ;
+      }
+
+
+const prasadCountByselectdate = async(req,res)=>{
+  let data= []
+    async function countDevoteePrasadtaken(desiredDate, timeStamp) {
+    const countResult = await allmodel.prasadModel.aggregate([
+        { $unwind: '$prasad' },
+        {
+          $match: {
+            'prasad.date': desiredDate,
+            [timeStamp]: { $ne: '' },
+          },
+        },
+        {
+          $group: {
+            _id: '$devoteeId',
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalCount: { $sum: 1 },
+          },
+        },
+      ]);
+      let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+      return devoteeprasadTakenCount;
+     
+    }
+   
+         data =  [{
+              title: req.query.date,
+              message: "ବାଲ୍ୟ",
+              translate: "breakfast",
+              status: "lost",
+              count:   await countDevoteePrasadtaken(req.query.date ,"prasad.balyaTiming")
+          },  
+          {
+              title: req.query.date,
+              message: "ମଧ୍ୟାହ୍ନ",
+              translate: "Lunch",
+              status: "lost",
+              count:  await countDevoteePrasadtaken(req.query.date,"prasad.madhyanaTiming")
+          },       
+          {
+              title: req.query.date,
+              message: "ରାତ୍ର",
+              translate: "Dinner",
+              status: "lost",
+              count:  await countDevoteePrasadtaken(req.query.date,"prasad.ratraTiming")
+          }, ]
+          res.status(200).json(data);
+  }
+
+    
+
 
 
 module.exports = {
@@ -643,7 +858,12 @@ module.exports = {
     createRelativeDevotee,
     admin_devoteeDashboard,
     prasdUpdateDevotee,
-    devoteeListBycreatedById
+    securityCheck,
+    devoteeListBycreatedById,
+    prasadCount,
+    updateSettings,
+    prasadCountByselectdate,
+    getSettings
 }
 
 //
