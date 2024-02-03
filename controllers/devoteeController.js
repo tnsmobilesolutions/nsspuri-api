@@ -77,8 +77,6 @@ const devoteeListBycreatedById = async(req,res)=>{
 }
 //update prasad by qr code
 const prasdUpdateDevotee = async (req, res) => {
-  
-
 
     try {
         
@@ -153,9 +151,9 @@ const prasdUpdateDevotee = async (req, res) => {
                     }
                 } else {
                     // Create a new prasad entry for the devotee
-                    const isBalyaTime = await compareThreeTime(currentTime, process.env.balyaStartTime, process.env.balyaEndTime);
-                    const isMadhyannaTime = await compareThreeTime(currentTime, process.env.madhyanaStartTime, process.env.madhyanaEndTime);
-                    const isRatraTime = await compareThreeTime(currentTime, process.env.ratraStartTime, process.env.ratraEndTime);
+                    const isBalyaTime = await compareThreeTime(currentTime, balyaStartTime, balyaEndTime);
+                        const isMadhyannaTime = await compareThreeTime(currentTime, madhyanaStartTime, madhyanaEndTime);
+                        const isRatraTime = await compareThreeTime(currentTime, ratraStartTime, ratraEndTime);
                     if (isBalyaTime || isMadhyannaTime || isRatraTime) {
                         // Create a new prasad entry for the devotee
                         const prasadData = {
@@ -538,27 +536,27 @@ async function devoteeList(status) {
 }
 async function countDevoteePrasadtaken(desiredDate, timeStamp) {
     const countResult = await allmodel.prasadModel.aggregate([
-      { $unwind: '$prasad' },
-      {
-        $match: {
-          'prasad.date': desiredDate,
-          [timeStamp]: { $ne: '' },
+        { $unwind: '$prasad' },
+        {
+          $match: {
+            'prasad.date': desiredDate,
+            [timeStamp]: { $ne: '' },
+          },
         },
-      },
-      {
-        $group: {
-          _id: '$devoteeId',
+        {
+          $group: {
+            _id: '$devoteeId',
+          },
         },
-      },
-      {
-        $group: {
-          _id: null,
-          totalCount: { $sum: 1 },
+        {
+          $group: {
+            _id: null,
+            totalCount: { $sum: 1 },
+          },
         },
-      },
-    ]);
-    let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
-    return devoteeprasadTakenCount;
+      ]);
+      let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+      return devoteeprasadTakenCount;
 }
 
        let allDevotee = await devotee.find().sort({name:1})
@@ -854,6 +852,80 @@ const prasadCountByselectdate = async(req,res)=>{
           res.status(200).json(data);
   }
 
+  const prasdCountNow = async(req,res)=>{
+    try {
+        let allTimings = await allmodel.settings.findOne();
+   
+            let balyaStartTime = allTimings.balyaStartTime
+            let balyaEndTime = allTimings.balyaEndTime
+            let madhyanaStartTime = allTimings.madhyanaStartTime
+            let madhyanaEndTime = allTimings.madhyanaEndTime
+            let ratraStartTime = allTimings.ratraStartTime
+            let ratraEndTime = allTimings.ratraEndTime
+
+        const isBalyaTime = await compareThreeTime(req.query.currentTime, balyaStartTime, balyaEndTime);
+        const isMadhyannaTime = await compareThreeTime(req.query.currentTime, madhyanaStartTime, madhyanaEndTime);
+        const isRatraTime = await compareThreeTime(req.query.currentTime, ratraStartTime, ratraEndTime);
+        async function countDevoteePrasadtaken(desiredDate, timeStamp) {
+            const countResult = await allmodel.prasadModel.aggregate([
+                { $unwind: '$prasad' },
+                {
+                  $match: {
+                    'prasad.date': desiredDate,
+                    [timeStamp]: { $ne: '' },
+                  },
+                },
+                {
+                  $group: {
+                    _id: '$devoteeId',
+                  },
+                },
+                {
+                  $group: {
+                    _id: null,
+                    totalCount: { $sum: 1 },
+                  },
+                },
+              ]);
+              let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+              return devoteeprasadTakenCount;
+        }
+        let data;
+        if(isBalyaTime){
+            data = {
+              date: req.query.date,
+              timing: "ବାଲ୍ୟ",
+              translate: "breakfast",
+              count:   await countDevoteePrasadtaken(req.query.date ,"prasad.balyaTiming")
+            }
+           
+          
+        }else if(isMadhyannaTime){
+            data =   {
+                date: req.query.date,
+                timing: "ମଧ୍ୟାହ୍ନ",
+                translate: "Lunch",
+                count:  await countDevoteePrasadtaken(req.query.date,"prasad.madhyanaTiming")
+            }
+        }else if(isRatraTime){
+ data = {
+    date: req.query.date,
+    timing: "ରାତ୍ର",
+              translate: "Dinner",
+            
+              count:  await countDevoteePrasadtaken(req.query.date,"prasad.ratraTiming")
+          }
+        }else{
+            data = messages.INVALID_TIME
+        }
+ res.status(200).json(data)
+    } catch (error) {
+        console.log("error in find count",data)
+         res.status(500).json(error)
+    }
+   
+  }
+
     
 
 
@@ -877,7 +949,8 @@ module.exports = {
     prasadCount,
     updateSettings,
     prasadCountByselectdate,
-    getSettings
+    getSettings,
+    prasdCountNow
 }
 
 //
