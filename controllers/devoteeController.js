@@ -77,100 +77,108 @@ const devoteeListBycreatedById = async(req,res)=>{
 }
 //update prasad by qr code
 const prasdUpdateDevotee = async (req, res) => {
-    let data = req.body;
-    let allTimings = await allmodel.settings.findOne();
-    console.log("allTimings-------",allTimings)
-    let balyaStartTime = allTimings.balyaStartTime
-    let balyaEndTime = allTimings.balyaEndTime
-    let madhyanaStartTime = allTimings.madhyanaStartTime
-    let madhyanaEndTime = allTimings.madhyanaEndTime
-    let ratraStartTime = allTimings.ratraStartTime
-    let ratraEndTime = allTimings.ratraEndTime
-    const currentDate = data.date;
-    const currentTime = data.time;
+  
+
 
     try {
-        const devoteeDetails = await allmodel.devoteemodel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
-        if (!devoteeDetails) {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.NO_DEVOTEEFOUND}, devoteeData : devoteeDetails});} 
-
-        if(devoteeDetails.status == "blacklisted"  ) {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.BLACKLISTED_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
-        if( devoteeDetails.status == "rejected") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.REJECTED_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
-        if(devoteeDetails.status == "lost") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.LOST_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
-        if(devoteeDetails.status == "withdrawn") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.WITHDRAWN_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
-
-        const prasadDetails = await allmodel.prasadModel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
-        
-        if (prasadDetails && prasadDetails!= null) {
-            const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
-
-            if (existingPrasad && existingPrasad.balyaTiming && existingPrasad.MadhyannaTiming && existingPrasad.ratriTiming) {
-                // If all timings are updated, show an error that prasad is already taken for today
-                return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN}, devoteeData : devoteeDetails});
-            }else {
-                // Check if the current time falls within any meal timings
-                const isBalyaTime = await compareThreeTime(currentTime, balyaStartTime, balyaEndTime);
-                const isMadhyannaTime = await compareThreeTime(currentTime, madhyanaStartTime, madhyanaEndTime);
-                const isRatraTime = await compareThreeTime(currentTime, ratraStartTime, ratraEndTime);
-              
-                let prasadFound = false;
-
+        let data = req.body;
+        let allTimings = await allmodel.settings.findOne();
+        console.log("allTimings-------",allTimings)
+        if(allTimings){
+            let balyaStartTime = allTimings.balyaStartTime
+            let balyaEndTime = allTimings.balyaEndTime
+            let madhyanaStartTime = allTimings.madhyanaStartTime
+            let madhyanaEndTime = allTimings.madhyanaEndTime
+            let ratraStartTime = allTimings.ratraStartTime
+            let ratraEndTime = allTimings.ratraEndTime
+            const currentDate = data.date;
+            const currentTime = data.time;
+            const devoteeDetails = await allmodel.devoteemodel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
+            if (!devoteeDetails) {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.NO_DEVOTEEFOUND}, devoteeData : devoteeDetails});} 
+    
+            if(devoteeDetails.status == "blacklisted"  ) {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.BLACKLISTED_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
+            if( devoteeDetails.status == "rejected") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.REJECTED_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
+            if(devoteeDetails.status == "lost") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.LOST_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
+            if(devoteeDetails.status == "withdrawn") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.WITHDRAWN_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
+    
+            const prasadDetails = await allmodel.prasadModel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
+            
+            if (prasadDetails && prasadDetails!= null) {
                 const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
-
-                if (existingPrasad) {
-                    console.log("prasad exist", existingPrasad)
-                    if (isBalyaTime && !existingPrasad.balyaTiming) {
-                        existingPrasad.balyaTiming = currentTime;
-                    } else if (isMadhyannaTime && !existingPrasad.madhyanaTiming) {
-                        existingPrasad.madhyanaTiming = currentTime;
-                    } else if (isRatraTime && !existingPrasad.ratraTiming) {
-                        existingPrasad.ratraTiming = currentTime;
+    
+                if (existingPrasad && existingPrasad.balyaTiming && existingPrasad.MadhyannaTiming && existingPrasad.ratriTiming) {
+                    // If all timings are updated, show an error that prasad is already taken for today
+                    return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN}, devoteeData : devoteeDetails});
+                }else {
+                    // Check if the current time falls within any meal timings
+                    const isBalyaTime = await compareThreeTime(currentTime, balyaStartTime, balyaEndTime);
+                    const isMadhyannaTime = await compareThreeTime(currentTime, madhyanaStartTime, madhyanaEndTime);
+                    const isRatraTime = await compareThreeTime(currentTime, ratraStartTime, ratraEndTime);
+                  
+                    let prasadFound = false;
+    
+                    const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
+    
+                    if (existingPrasad) {
+                        console.log("prasad exist", existingPrasad)
+                        if (isBalyaTime && !existingPrasad.balyaTiming) {
+                            existingPrasad.balyaTiming = currentTime;
+                        } else if (isMadhyannaTime && !existingPrasad.madhyanaTiming) {
+                            existingPrasad.madhyanaTiming = currentTime;
+                        } else if (isRatraTime && !existingPrasad.ratraTiming) {
+                            existingPrasad.ratraTiming = currentTime;
+                        } else {
+                            return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN} ,devoteeData : devoteeDetails});
+                        }
                     } else {
-                        return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN} ,devoteeData : devoteeDetails});
-                    }
-                } else {
-                    console.log("new prasad");
-                    // Create a new prasad object if the currentDate does not exist
-                    let newPrasad = {
-                        date: currentDate,
-                    };
-                    if (isBalyaTime) {
-                        newPrasad.balyaTiming = currentTime;
-                    } else if (isMadhyannaTime) {
-                        newPrasad.madhyanaTiming = currentTime;
-                    } else if (isRatraTime) {
-                        newPrasad.ratraTiming = currentTime;
-                    }
-                    prasadDetails.prasad.push(newPrasad);
-                }   
-                await prasadDetails.save(); 
-                return res.status(200).json({ status: "Success",message: messages.SCAN_SUCCESSFULLY,error: null,devoteeData : devoteeDetails});
-               
-                
-            }
-        } else {
-            // Create a new prasad entry for the devotee
-            const isBalyaTime = await compareThreeTime(currentTime, process.env.balyaStartTime, process.env.balyaEndTime);
-            const isMadhyannaTime = await compareThreeTime(currentTime, process.env.madhyanaStartTime, process.env.madhyanaEndTime);
-            const isRatraTime = await compareThreeTime(currentTime, process.env.ratraStartTime, process.env.ratraEndTime);
-            if (isBalyaTime || isMadhyannaTime || isRatraTime) {
-                // Create a new prasad entry for the devotee
-                const prasadData = {
-                    devoteeCode : devoteeDetails.devoteeCode,
-                    devoteeId: devoteeDetails.devoteeId,
-                    prasad: [{
-                    date: currentDate,
-                    balyaTiming: isBalyaTime ? currentTime : '',
-                    madhyanaTiming: isMadhyannaTime ? currentTime : '',
-                    ratraTiming: isRatraTime ? currentTime : ''
-                }]};
-               await allmodel.prasadModel.create(prasadData);
-               return res.status(200).json({ status: "Failure",message: messages.SCAN_SUCCESSFULLY ,error: null ,devoteeData : devoteeDetails});
-                // return res.status(200).json({ error: messages.SCAN_SUCCESSFULLY,devoteeData : devoteeDetails });
+                        console.log("new prasad");
+                        // Create a new prasad object if the currentDate does not exist
+                        let newPrasad = {
+                            date: currentDate,
+                        };
+                        if (isBalyaTime) {
+                            newPrasad.balyaTiming = currentTime;
+                        } else if (isMadhyannaTime) {
+                            newPrasad.madhyanaTiming = currentTime;
+                        } else if (isRatraTime) {
+                            newPrasad.ratraTiming = currentTime;
+                        }
+                        prasadDetails.prasad.push(newPrasad);
+                    }   
+                    await prasadDetails.save(); 
+                    return res.status(200).json({ status: "Success",message: messages.SCAN_SUCCESSFULLY,error: null,devoteeData : devoteeDetails});
+                   
+                    
+                }
             } else {
-                return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.INVALID_TIME} ,devoteeData : devoteeDetails});
-                // return res.status(200).json({ error: messages.INVALID_TIME,devoteeData : devoteeDetails });
+                // Create a new prasad entry for the devotee
+                const isBalyaTime = await compareThreeTime(currentTime, process.env.balyaStartTime, process.env.balyaEndTime);
+                const isMadhyannaTime = await compareThreeTime(currentTime, process.env.madhyanaStartTime, process.env.madhyanaEndTime);
+                const isRatraTime = await compareThreeTime(currentTime, process.env.ratraStartTime, process.env.ratraEndTime);
+                if (isBalyaTime || isMadhyannaTime || isRatraTime) {
+                    // Create a new prasad entry for the devotee
+                    const prasadData = {
+                        devoteeCode : devoteeDetails.devoteeCode,
+                        devoteeId: devoteeDetails.devoteeId,
+                        prasad: [{
+                        date: currentDate,
+                        balyaTiming: isBalyaTime ? currentTime : '',
+                        madhyanaTiming: isMadhyannaTime ? currentTime : '',
+                        ratraTiming: isRatraTime ? currentTime : ''
+                    }]};
+                   await allmodel.prasadModel.create(prasadData);
+                   return res.status(200).json({ status: "Failure",message: messages.SCAN_SUCCESSFULLY ,error: null ,devoteeData : devoteeDetails});
+                    // return res.status(200).json({ error: messages.SCAN_SUCCESSFULLY,devoteeData : devoteeDetails });
+                } else {
+                    return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.INVALID_TIME} ,devoteeData : devoteeDetails});
+                    // return res.status(200).json({ error: messages.INVALID_TIME,devoteeData : devoteeDetails });
+                }
             }
+        }else{
+            console.log("Error: ", error);
+            return res.status(500).json({ error: "Please check the timings-- " });
         }
+       
     } catch (error) {
         console.log("Error: ", error);
         return res.status(500).json({ error: error });
