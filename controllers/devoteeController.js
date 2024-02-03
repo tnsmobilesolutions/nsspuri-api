@@ -538,27 +538,27 @@ async function devoteeList(status) {
 }
 async function countDevoteePrasadtaken(desiredDate, timeStamp) {
     const countResult = await allmodel.prasadModel.aggregate([
-      { $unwind: '$prasad' },
-      {
-        $match: {
-          'prasad.date': desiredDate,
-          [timeStamp]: { $ne: '' },
+        { $unwind: '$prasad' },
+        {
+          $match: {
+            'prasad.date': desiredDate,
+            [timeStamp]: { $ne: '' },
+          },
         },
-      },
-      {
-        $group: {
-          _id: '$devoteeId',
+        {
+          $group: {
+            _id: '$devoteeId',
+          },
         },
-      },
-      {
-        $group: {
-          _id: null,
-          totalCount: { $sum: 1 },
+        {
+          $group: {
+            _id: null,
+            totalCount: { $sum: 1 },
+          },
         },
-      },
-    ]);
-    let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
-    return devoteeprasadTakenCount;
+      ]);
+      let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+      return devoteeprasadTakenCount;
 }
 
        let allDevotee = await devotee.find().sort({name:1})
