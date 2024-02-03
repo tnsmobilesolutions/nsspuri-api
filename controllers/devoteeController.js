@@ -916,7 +916,12 @@ const prasadCountByselectdate = async(req,res)=>{
               count:  await countDevoteePrasadtaken(req.query.date,"prasad.ratraTiming")
           }
         }else{
-            data = messages.INVALID_TIME
+            data = {
+                date: req.query.date,
+                timing: messages.INVALID_TIME,
+                translate: "",
+                count:  0
+                      }
         }
  res.status(200).json(data)
     } catch (error) {
