@@ -175,6 +175,7 @@ const prasdUpdateDevotee = async (req, res) => {
                 }
             }else{
                 console.log("Error: messages.PRANAMI_NOT_PAID");
+                return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRANAMI_NOT_PAID} ,devoteeData : devoteeDetails});
                 return res.status(500).json({ error: messages.PRANAMI_NOT_PAID });
             }
            
