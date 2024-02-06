@@ -82,7 +82,7 @@ const prasdUpdateDevotee = async (req, res) => {
         
         let data = req.body;
         let allTimings = await allmodel.settings.findOne();
-        console.log("allTimings-------",allTimings)
+      
         if(allTimings){
             let balyaStartTime = allTimings.balyaStartTime
             let balyaEndTime = allTimings.balyaEndTime
@@ -166,7 +166,7 @@ const prasdUpdateDevotee = async (req, res) => {
                             ratraTiming: isRatraTime ? currentTime : ''
                         }]};
                        await allmodel.prasadModel.create(prasadData);
-                       return res.status(200).json({ status: "Failure",message: messages.SCAN_SUCCESSFULLY ,error: null ,devoteeData : devoteeDetails});
+                       return res.status(200).json({ status: "Success",message: messages.SCAN_SUCCESSFULLY ,error: null ,devoteeData : devoteeDetails});
                         // return res.status(200).json({ error: messages.SCAN_SUCCESSFULLY,devoteeData : devoteeDetails });
                     } else {
                         return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.INVALID_TIME} ,devoteeData : devoteeDetails});
@@ -175,6 +175,7 @@ const prasdUpdateDevotee = async (req, res) => {
                 }
             }else{
                 console.log("Error: messages.PRANAMI_NOT_PAID");
+                return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRANAMI_NOT_PAID} ,devoteeData : devoteeDetails});
                 return res.status(500).json({ error: messages.PRANAMI_NOT_PAID });
             }
            
