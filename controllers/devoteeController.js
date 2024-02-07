@@ -327,6 +327,7 @@ const createRelativeDevotee = async (req, res) => {
         }
 
         data.createdById = req.user.devoteeId
+        data.createdByName = req.user.name
         data.createdOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
         data.updatedOn = moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A")
         const createDevotee = await devotee.create(data)
@@ -365,7 +366,7 @@ sort = {name:1}
         for (let i = 0; i < allDevotee.length; i++) {
             const createdByDevotee = await devotee.findOne({ devoteeId: allDevotee[i].createdById });
             if (createdByDevotee) {
-                allDevotee[i].createdById = createdByDevotee.name;
+                allDevotee[i].createdByName = createdByDevotee.name;
                 // delete allDevotee[i].createdById; // Remove the createdById field
             }
         }
@@ -383,7 +384,7 @@ const devotee_details = async (req, res) => {
         for (let i = 0; i < singleDevotee.length; i++) {
             const createdByDevotee = await devotee.findOne({ devoteeId: singleDevotee[i].createdById });
             if (createdByDevotee) {
-                singleDevotee[i].createdById = createdByDevotee.name;
+                singleDevotee[i].createdByName = createdByDevotee.name;
                 // delete singleDevotee[i].createdById; // Remove the createdById field
             }
         }
@@ -407,13 +408,7 @@ const devotee_details_by_devoteeId = async (req, res) => {
 const devotee_with_relatives = async (req, res) => {
     try {
         const singleDevotee = await devotee.find({createdById: req.user.devoteeId})
-        // for (let i = 0; i < singleDevotee.length; i++) {
-        //     const createdByDevotee = await devotee.findOne({ devoteeId: singleDevotee[i].createdById });
-        //     if (createdByDevotee) {
-        //         singleDevotee[i].createdById = createdByDevotee.name;
-        //         // delete singleDevotee[i].createdById; // Remove the createdById field
-        //     }
-        // }
+    
         res.status(200).json({singleDevotee})
     } catch (error) {
         console.log(error);
@@ -567,7 +562,7 @@ const advanceSearchDevotee = async (req, res) => {
             
             if (createdByDevotee) {
                 searchDevotee[i].createdByUUID = createdByDevotee.createdById
-                searchDevotee[i].createdById = createdByDevotee.name;
+                searchDevotee[i].createdByName = createdByDevotee.name;
                 searchDevotee[i].approvedBy = approvedByDevoteename
                 searchDevotee[i].rejectedBy = rejectedByDevoteename
             }

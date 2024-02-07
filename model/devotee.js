@@ -30,6 +30,7 @@ const devoteeSchema = new mongoose.Schema({
     uid: String,
     paidAmount: Number,
     createdById: String,
+    createdByName: String,
     createdByUUID: String,
     updatedById: String,
     approvedBy: String,
