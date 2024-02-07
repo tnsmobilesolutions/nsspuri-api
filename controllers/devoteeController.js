@@ -82,7 +82,6 @@ const prasdUpdateDevotee = async (req, res) => {
         
         let data = req.body;
         let allTimings = await allmodel.settings.findOne();
-      
         if(allTimings){
             let balyaStartTime = allTimings.balyaStartTime
             let balyaEndTime = allTimings.balyaEndTime
@@ -189,6 +188,105 @@ const prasdUpdateDevotee = async (req, res) => {
         return res.status(500).json({ error: error });
     }
 };
+
+
+
+const offlinePrasad = async (req,res)=>{
+    try{
+    const updates = req.body; 
+    let allTimings = await allmodel.settings.findOne();
+        let balyaStartTime = allTimings.balyaStartTime
+        let balyaEndTime = allTimings.balyaEndTime
+        let madhyanaStartTime = allTimings.madhyanaStartTime
+        let madhyanaEndTime = allTimings.madhyanaEndTime
+        let ratraStartTime = allTimings.ratraStartTime
+        let ratraEndTime = allTimings.ratraEndTime
+
+    for (const update of updates) {
+        const { devoteeCodes, date, time } = update;
+        const isBalyaTime = await compareThreeTime(time, balyaStartTime, balyaEndTime);
+        const isMadhyannaTime = await compareThreeTime(time, madhyanaStartTime, madhyanaEndTime);
+        const isRatraTime = await compareThreeTime(time, ratraStartTime, ratraEndTime);
+
+        for (const devoteeCode of devoteeCodes) {
+            // Fetch devotee details
+            const devoteeDetails = await allmodel.devoteemodel.findOne({ devoteeCode });
+
+            if (!devoteeDetails) {
+                console.log(`Devotee with code ${devoteeCode} not found`);
+                continue; 
+            }
+
+            // Check devotee status
+            if (devoteeDetails.status !== "paid" && devoteeDetails.status !== "printed") {
+                console.log(`Devotee with code ${devoteeCode} is not paid or printed`);
+                continue; 
+            }
+
+            // Fetch prasad details
+            let prasadDetails = await allmodel.prasadModel.findOne({ devoteeCode });
+
+            if (!prasadDetails) {
+                
+                if(isBalyaTime){
+                    prasadDetails = await allmodel.prasadModel.create({
+                        devoteeCode,
+                        devoteeId: devoteeDetails.devoteeId,
+                        prasad: [{ date, balyaTiming: time, madhyanaTiming: "", ratraTiming: "" }]
+                    });
+                }if(isMadhyannaTime){
+                    prasadDetails = await allmodel.prasadModel.create({
+                        devoteeCode,
+                        devoteeId: devoteeDetails.devoteeId,
+                        prasad: [{ date, balyaTiming: "", madhyanaTiming: time, ratraTiming: "" }]
+                    });
+                }if(isRatraTime){
+                    prasadDetails = await allmodel.prasadModel.create({
+                        devoteeCode,
+                        devoteeId: devoteeDetails.devoteeId,
+                        prasad: [{ date, balyaTiming: "", madhyanaTiming: "", ratraTiming: time }]
+                    });
+                }
+                
+            } else {
+                // If prasad details found, update existing entry or create new entry
+                let existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === date);
+                if (existingPrasad) {
+                    // Update existing prasad entry
+                    if (existingPrasad.balyaTiming && existingPrasad.madhyanaTiming && existingPrasad.ratraTiming) {
+                        console.log(`Prasad for devotee with code ${devoteeCode} is already taken for ${date}`);
+                        continue; 
+                    } else {
+                        // Update prasad timing
+                        if (!existingPrasad.balyaTiming) existingPrasad.balyaTiming = time;
+                        else if (!existingPrasad.madhyanaTiming) existingPrasad.madhyanaTiming = time;
+                        else if (!existingPrasad.ratraTiming) existingPrasad.ratraTiming = time;
+                       await existingPrasad.save()
+                    }
+                } else {
+                    if(isBalyaTime){
+                        prasadDetails.prasad.push({ date, balyaTiming: time, madhyanaTiming: "", ratraTiming: "" });
+                    }
+                    if(isMadhyannaTime){
+                        prasadDetails.prasad.push({ date, balyaTiming: "", madhyanaTiming: time, ratraTiming: "" });
+                    }
+                    if(isRatraTime){
+                        prasadDetails.prasad.push({ date, balyaTiming: "", madhyanaTiming: "", ratraTiming: time });
+                    }
+                    // Create new prasad entry
+                    // prasadDetails.prasad.push({ date, balyaTiming: "", madhyanaTiming: "", ratraTiming: "" });
+                }
+                await prasadDetails.save();
+            }
+            console.log(`Prasad updated successfully for devotee with code ${devoteeCode}`);
+        }
+    }
+
+    return res.status(200).json({ status: "Success", message: "Prasad updated successfully" })
+    } catch (error) {
+        console.log("error - ---",error)
+}
+}
 
 const securityCheck = async (req,res) =>{
     let data = req.body
@@ -956,7 +1054,8 @@ module.exports = {
     updateSettings,
     prasadCountByselectdate,
     getSettings,
-    prasdCountNow
+    prasdCountNow,
+    offlinePrasad
 }
 
 //
