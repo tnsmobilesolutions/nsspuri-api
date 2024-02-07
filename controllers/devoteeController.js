@@ -345,12 +345,21 @@ const devotee_all = async (req, res) => {
         const numberofskipdata = (page - 1) * limit;
         let allDevotee = []
         let count
+        let sort ={}
+if(req.query.name=="ascending"){
+sort = {name:1}
+}else if (req.query.name=="descending"){
+    sort = {name:-1}
+}else{
+    sort = {devoteeCode: 1}
+}
+
         if (req.query.sangha) {
             count = await devotee.countDocuments({sangha:{ "$regex": `${req.query.sangha}`, '$options': 'i' }})
-            allDevotee = await devotee.find({sangha:{ "$regex": `${req.query.sangha}`, '$options': 'i' }}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+            allDevotee = await devotee.find({sangha:{ "$regex": `${req.query.sangha}`, '$options': 'i' }}).sort(sort).skip(numberofskipdata).limit(limit); 
         } else {
             count = await devotee.countDocuments()
-        allDevotee = await devotee.find().sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+        allDevotee = await devotee.find().sort(sort).skip(numberofskipdata).limit(limit); 
         }
         const totalPages = Math.ceil(count / limit);
         for (let i = 0; i < allDevotee.length; i++) {
@@ -418,20 +427,28 @@ const searchDevotee = async (req, res) => {
     const limit = parseInt(req.query.limit) || 5000;
     const numberofskipdata = (page - 1) * limit;
     let count
+    let sort ={}
+    if(req.query.name=="ascending"){
+    sort = {name:1}
+    }else if (req.query.name=="descending"){
+        sort = {name:-1}
+    }else{
+        sort = {devoteeCode: 1}
+    }
     try {
         if(req.query.status){
                 count = await devotee.countDocuments({status: {"$regex": `${req.query.status}`, '$options': 'i' }})
-                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort(sort).skip(numberofskipdata).limit(limit); 
            
             
         }
         if(req.query.devoteeName){
             count = await devotee.find({name: {"$regex": `${req.query.devoteeName}`, '$options': 'i' }})
-         searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeName}`, '$options': 'i' }}).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); ;
+         searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeName}`, '$options': 'i' }}).sort(sort).skip(numberofskipdata).limit(limit); ;
         }
         if(req.query.status && req.query.devoteeName){
             count = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } })
-            searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } }).sort({devoteeCode:-1}).skip(numberofskipdata).limit(limit); 
+            searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } }).sort(sort).skip(numberofskipdata).limit(limit); 
         }
         const totalPages = Math.ceil(count / limit);
 
