@@ -293,9 +293,11 @@ const securityCheck = async (req,res) =>{
     try {
         let devotee = await allmodel.devoteemodel.findOne({devoteeCode: req.params.devoteeCode});
         if(!devotee){
-            throw messages.NO_DEVOTEEFOUND
+            return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.NO_DEVOTEEFOUND} ,devoteeData : null});
+           
         }else{
-            res.status(200).json(messages.DEVOTEE_VERIFIED)
+            return res.status(200).json({ status: "Success",error: null ,devoteeData : devotee});
+           
         }
     } catch (error) {
         res.status(500).json(error)
@@ -1048,7 +1050,7 @@ const prasadCountByselectdate = async(req,res)=>{
         }else{
             data = {
                 date: req.query.date,
-                timing: messages.INVALID_TIME,
+                timing: null,
                 translate: "",
                 count:  0
                       }
