@@ -61,8 +61,23 @@ const getSettings = async (req, res) => {
 
 
 const devoteeListBycreatedById = async(req,res)=>{
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5000;
+    const numberofskipdata = (page - 1) * limit;
+
+    let count
+    let sort ={}
+if(req.query.name=="ascending"){
+sort = {name:1}
+}else if (req.query.name=="descending"){
+sort = {name:-1}
+}else{
+sort = {devoteeCode: 1}
+}
   try {
-    let devoteeList = await allmodel.devoteemodel.find({createdById: req.params.id})
+    let devoteeList = await allmodel.devoteemodel.find({createdById: req.params.id}).sort(sort).skip(numberofskipdata).limit(limit); 
+   
+     count = await allmodel.devoteemodel.countDocuments({createdById: req.params.id})
     for (let i = 0; i < devoteeList.length; i++) {
         const createdByDevotee = await devotee.findOne({ devoteeId: devoteeList[i].createdById });
         if (createdByDevotee) {
@@ -70,7 +85,8 @@ const devoteeListBycreatedById = async(req,res)=>{
             // delete allDevotee[i].createdById; // Remove the createdById field
         }
     }
-    res.status(200).json({devoteeList})
+    const totalPages = Math.ceil(count / limit);
+    res.status(200).json({devoteeList,count,totalPages,page})
   } catch (error) {
     console.log(error)
   }
