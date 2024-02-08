@@ -517,9 +517,9 @@ const advanceSearchDevotee = async (req, res) => {
     const numberofskipdata = (page - 1) * limit;
     let count
     let sort ={}
-    if(req.query.name=="ascending"){
+    if(req.query.nameOrder=="ascending"){
     sort = {name:1}
-    }else if (req.query.name=="descending"){
+    }else if (req.query.nameOrder=="descending"){
         sort = {name:-1}
     }else{
         sort = {devoteeCode: 1}
