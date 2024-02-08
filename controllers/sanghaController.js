@@ -15,7 +15,7 @@ const sangha_create = async (req, res) => {
 // All Sangha
 const sangha_all = async (req, res) => {
     try {
-        const allSangha = await sangha.find()
+        const allSangha = await sangha.find().sort({sanghaName:1})
         res.status(200).json({allSangha})
     } catch (error) {
         res.status(400).json({"error":error.message});
