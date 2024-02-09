@@ -58,10 +58,11 @@ deleteRequest("/devotee/:id", devoteeController.devotee_delete);
 getRequest("/admin/dashboard", devoteeController.admin_devoteeDashboard);
 getRequest("/prasadTakencount", devoteeController.prasadCount);
 putRequest("/prasadUpdate/:code", devoteeController.prasdUpdateDevotee);
-putRequest("/prasadTimingSetting/", devoteeController.updateSettings);
-getRequest("/prasadTimingSetting/", devoteeController.getSettings);
-getRequest("/prasadCountByselectdate/", devoteeController.prasadCountByselectdate);
-getRequest("/prasdCountNow/", devoteeController.prasdCountNow);
+putRequest("/prasadTimingSetting", devoteeController.updateSettings);
+getRequest("/prasadTimingSetting", devoteeController.getSettings);
+getRequest("/prasadCountByselectdate", devoteeController.prasadCountByselectdate);
+getRequest("/prasdCountNow", devoteeController.prasdCountNow);
+putRequest("/offlinePrasad", devoteeController.offlinePrasad);
 // getRequest("/getPrasad/:code", devoteeController.prasdUpdatedevotee);
 
 
