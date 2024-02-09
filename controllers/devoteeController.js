@@ -438,6 +438,7 @@ const devotee_with_relatives = async (req, res) => {
         const numberofskipdata = (page - 1) * limit;
         let count = await devotee.countDocuments({createdById: req.user.devoteeId})
         const singleDevotee = await devotee.find({createdById: req.user.devoteeId}).sort(sort).skip(numberofskipdata).limit(limit); 
+        const totalPages = Math.ceil(count / limit);
         res.status(200).json({singleDevotee,count,totalPages,page})
     } catch (error) {
         console.log(error);
