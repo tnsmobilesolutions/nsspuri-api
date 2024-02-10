@@ -384,7 +384,7 @@ sort = {name:1}
         for (let i = 0; i < allDevotee.length; i++) {
             const createdByDevotee = await devotee.findOne({ devoteeId: allDevotee[i].createdById });
             if (createdByDevotee) {
-                allDevotee[i].createdByName = createdByDevotee.name;
+                allDevotee[i].createdById = createdByDevotee.name;
                 // delete allDevotee[i].createdById; // Remove the createdById field
             }
         }
@@ -402,7 +402,7 @@ const devotee_details = async (req, res) => {
         for (let i = 0; i < singleDevotee.length; i++) {
             const createdByDevotee = await devotee.findOne({ devoteeId: singleDevotee[i].createdById });
             if (createdByDevotee) {
-                singleDevotee[i].createdByName = createdByDevotee.name;
+                singleDevotee[i].createdById = createdByDevotee.name;
                 // delete singleDevotee[i].createdById; // Remove the createdById field
             }
         }
@@ -600,7 +600,7 @@ const advanceSearchDevotee = async (req, res) => {
             
             if (createdByDevotee) {
                 searchDevotee[i].createdByUUID = createdByDevotee.createdById
-                searchDevotee[i].createdByName = createdByDevotee.name;
+                searchDevotee[i].createdById = createdByDevotee.name;
                 searchDevotee[i].approvedBy = approvedByDevoteename
                 searchDevotee[i].rejectedBy = rejectedByDevoteename
             }
