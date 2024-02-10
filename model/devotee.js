@@ -29,6 +29,7 @@ const devoteeSchema = new mongoose.Schema({
     isOrganizer: { type: Boolean, default: false },
     uid: String,
     paidAmount: Number,
+    paymentMode: String,
     createdById: String,
     createdByName: String,
     createdByUUID: String,

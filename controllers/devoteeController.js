@@ -105,8 +105,17 @@ const prasdUpdateDevotee = async (req, res) => {
             let madhyanaEndTime = allTimings.madhyanaEndTime
             let ratraStartTime = allTimings.ratraStartTime
             let ratraEndTime = allTimings.ratraEndTime
+            let prasadFirstDate = allTimings.prasadFirstDate
+            let prasadSecondDate = allTimings.prasadSecondDate
+            let prasadThirdDate = allTimings.prasadThirdDate     
             const currentDate = data.date;
             const currentTime = data.time;
+
+            const prasadDates = [prasadFirstDate, prasadSecondDate, prasadThirdDate];
+
+            if (!prasadDates.includes(currentDate)){
+                return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.INVALID_TIME} ,devoteeData : devoteeDetails});
+            }
             const devoteeDetails = await allmodel.devoteemodel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
             
             if (!devoteeDetails) {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.NO_DEVOTEEFOUND}, devoteeData : devoteeDetails});} 
@@ -637,6 +646,8 @@ const devotee_update = async (req, res) => {
         let currentDevotee = await devotee.findOne({devoteeId : req.user.devoteeId})
 
 let data = req.body;
+// if(data.status == "paid" && (!data.paymentMode || data.paymentMode == "" || data.paymentMode == null))throw messages.PAYMENT_MODE
+
 data.updatedById = currentDevotee.devoteeId
 if(data.status == "approved"){
     data.approvedBy = currentDevotee.devoteeId;
