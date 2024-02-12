@@ -113,9 +113,7 @@ const prasdUpdateDevotee = async (req, res) => {
 
             const prasadDates = [prasadFirstDate, prasadSecondDate, prasadThirdDate];
 
-            if (!prasadDates.includes(currentDate)){
-                return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.INVALID_TIME} ,devoteeData : devoteeDetails});
-            }
+          
             const devoteeDetails = await allmodel.devoteemodel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
             
             if (!devoteeDetails) {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.NO_DEVOTEEFOUND}, devoteeData : devoteeDetails});} 
@@ -124,6 +122,12 @@ const prasdUpdateDevotee = async (req, res) => {
             if( devoteeDetails.status == "rejected") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.REJECTED_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
             if(devoteeDetails.status == "lost") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.LOST_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
             if(devoteeDetails.status == "withdrawn") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.WITHDRAWN_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
+            if (!prasadDates.includes(currentDate)){
+                return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.INVALID_TIME} ,devoteeData : devoteeDetails});
+            }
+            if (isNaN(req.params.code)) {
+                return res.status(200).json({ status: "Failure", error: { errorCode: 1002, message: messages.NO_DEVOTEEFOUND }, devoteeData: null });
+            }
             if(devoteeDetails && (devoteeDetails.status == "paid" ||devoteeDetails.status == "printed" )){
                 const prasadDetails = await allmodel.prasadModel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
             
@@ -313,22 +317,35 @@ const offlinePrasad = async (req,res)=>{
 }
 }
 
-const securityCheck = async (req,res) =>{
-    let data = req.body
+const securityCheck = async (req, res) => {
+    let data = req.body;
     try {
-        let devotee = await allmodel.devoteemodel.findOne({devoteeCode: req.params.devoteeCode});
-        if(!devotee){
-            return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.NO_DEVOTEEFOUND} ,devoteeData : null});
-           
-        }else{
-            return res.status(200).json({ status: "Success",error: null ,devoteeData : devotee});
-           
+        // Check if devoteeCode is a number
+        const devoteeCode = req.params.devoteeCode;
+        if (isNaN(devoteeCode)) {
+            return res.status(200).json({ status: "Failure", error: { errorCode: 1002, message: messages.NO_DEVOTEEFOUND }, devoteeData: null });
         }
+
+        let devotee = await allmodel.devoteemodel.findOne({ devoteeCode: devoteeCode });
+        if (!devotee) {
+            return res.status(200).json({ status: "Failure", error: { errorCode: 1001, message: messages.NO_DEVOTEEFOUND }, devoteeData: null });
+        }  
+        if(devotee.status == "blacklisted"  ) {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.BLACKLISTED_DEVOTEE_SCAN}, devoteeData : devotee});}
+       else if( devotee.status == "rejected") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.REJECTED_DEVOTEE_SCAN}, devoteeData : devotee});}
+       else if(devotee.status == "lost") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.LOST_DEVOTEE_SCAN}, devoteeData : devotee});}
+       else if(devotee.status == "withdrawn") {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.WITHDRAWN_DEVOTEE_SCAN}, devoteeData : devotee});} 
+       else if(devotee.status == "paid" || devotee.status == "printed" ) {return res.status(200).json({ status: "Success",error: null, devoteeData : devotee});} 
+        else{
+            return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRANAMI_NOT_PAID}, devoteeData : devotee});
+        }
+
+            // return res.status(200).json({ status: "Success", error: null, devoteeData: devotee });
     } catch (error) {
-        res.status(500).json(error)
-        console.log("security check error",error)
+        res.status(500).json(error);
+        console.log("security check error", error);
     }
 }
+
 
 
 
@@ -1027,29 +1044,53 @@ const prasadCountByselectdate = async(req,res)=>{
         const isMadhyannaTime = await compareThreeTime(req.query.currentTime, madhyanaStartTime, madhyanaEndTime);
         const isRatraTime = await compareThreeTime(req.query.currentTime, ratraStartTime, ratraEndTime);
         async function countDevoteePrasadtaken(desiredDate, timeStamp) {
-            const countResult = await allmodel.prasadModel.aggregate([
-                { $unwind: '$prasad' },
-                {
-                  $match: {
-                    'prasad.date': desiredDate,
-                    [timeStamp]: { $ne: '' },
-                  },
-                },
-                {
-                  $group: {
-                    _id: '$devoteeId',
-                  },
-                },
-                {
-                  $group: {
-                    _id: null,
-                    totalCount: { $sum: 1 },
-                  },
-                },
-              ]);
+let pipeline1 = [
+    { $unwind: '$prasad' },
+    {
+      $match: {
+        'prasad.date': desiredDate,
+        [timeStamp]: { $ne: '' },
+      },
+    },
+    {
+      $group: {
+        _id: '$devoteeId',
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalCount: { $sum: 1 },
+      },
+    },
+  ]
+  let pipeline2 =  [
+    { $unwind: '$prasad' },
+    {
+      $match: {
+        'outsideDevotee': true,
+        'prasad.date': desiredDate,
+        [timeStamp]: { $ne: '' },
+
+      },
+    },
+    {
+      $group: {
+        _id: desiredDate,
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalCount: { $sum: 1 },
+      },
+    },
+  ]
+            const countResult = await allmodel.prasadModel.aggregate(pipeline1);
               let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
               return devoteeprasadTakenCount;
         }
+
         let data;
         if(isBalyaTime){
             data = {
@@ -1091,6 +1132,67 @@ const prasadCountByselectdate = async(req,res)=>{
    
   }
 
+  async function offlineAddDevoteeCounter(req,res) {
+   try {
+    let data = req.body
+    let allTimings = await allmodel.settings.findOne();
+    let balyaStartTime = allTimings.balyaStartTime
+    let balyaEndTime = allTimings.balyaEndTime
+    let madhyanaStartTime = allTimings.madhyanaStartTime
+    let madhyanaEndTime = allTimings.madhyanaEndTime
+    let ratraStartTime = allTimings.ratraStartTime
+    let ratraEndTime = allTimings.ratraEndTime
+
+const isBalyaTime = await compareThreeTime(req.query.currentTime, balyaStartTime, balyaEndTime);
+const isMadhyannaTime = await compareThreeTime(req.query.currentTime, madhyanaStartTime, madhyanaEndTime);
+const isRatraTime = await compareThreeTime(req.query.currentTime, ratraStartTime, ratraEndTime);
+let addData ;
+if(isBalyaTime){
+    addData = {
+"outsideDevotee": true,
+"numberOfDevotee":data.numberOfDevotee,
+"devoteeId": data.devoteeId,
+"prasad":[{
+       date:data.date,
+        balyaTiming: data.balyaTiming,
+        madhyanaTiming: "",
+        ratraTiming: "",
+}]
+    }
+}else if (isMadhyannaTime){
+    addData = {
+        "outsideDevotee": true,
+        "numberOfDevotee":data.numberOfDevotee,
+        "devoteeId": data.devoteeId,
+        "prasad":[{
+               date:data.date,
+                balyaTiming: "",
+                madhyanaTiming: data.madhyanaTiming,
+                ratraTiming: "",
+        }]
+            } 
+}else if (isRatraTime){
+    addData = {
+        "outsideDevotee": true,
+        "numberOfDevotee":data.numberOfDevotee,
+        "devoteeId": data.devoteeId,
+        "prasad":[{
+               date:data.date,
+                balyaTiming: "",
+                madhyanaTiming: "",
+                ratraTiming: data.ratraTiming,
+        }]
+            }
+}else {
+    return;
+}
+let returnData = await allmodel.prasadModel.create(addData);
+res.status(200).json(returnData);
+   } catch (error) {
+    res.status(500).json({error: error})
+   }
+  }
+
     
 
 
@@ -1116,7 +1218,8 @@ module.exports = {
     prasadCountByselectdate,
     getSettings,
     prasdCountNow,
-    offlinePrasad
+    offlinePrasad,
+    offlineAddDevoteeCounter
 }
 
 //

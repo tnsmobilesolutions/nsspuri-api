@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const moment = require("moment-timezone");
 
 let prasdSchema = mongoose.Schema({
+    outsideDevotee:Boolean,
+    numberOfDevotee: Number,
     prasadid : String,
     devoteeId: { type: String, unique: true, required: true },
     devoteeCode: { type: Number, unique: true, required: true },
