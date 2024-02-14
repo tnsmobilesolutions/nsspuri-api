@@ -1197,15 +1197,30 @@ let pipeline1 = [
   }else{
     numberOfDevotee = 0
   }
-  let couponNumber
-  let coupononDate = await allmodel.prasadModel.find({couponDevotee:true,"couponPrasad.date": req.query.date});
-  if(coupononDate){
-    
+  let couponNumber =0
+  let coupononDate = await allmodel.prasadModel.find({couponDevotee:true,"couponPrasad.date": req.query.date})
+  if(coupononDate.length > 0){
+    coupononDate.forEach((coupon)=>{
+        coupon.couponPrasad.forEach((prasadCoupon)=>{
+            if(prasadCoupon.date === req.query.date){
+                if (timeStamp === "prasad.balyaTiming") {
+                    couponNumber += prasadCoupon.balyaTiming.length || 0;
+                } else if (timeStamp === "prasad.madhyanaTiming") {
+                    couponNumber += prasadCoupon.madhyanaTiming.length || 0;
+                } else if (timeStamp === "prasad.ratraTiming") {
+                    couponNumber += prasadCoupon.ratraTiming.length || 0;
+                }else{
+                    couponNumber = 0
+                }
+            }
+        })
+
+    })
   }
             const countResult = await allmodel.prasadModel.aggregate(pipeline1);
               let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
 
-let allDevotee = devoteeprasadTakenCount + numberOfDevotee
+let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
               return allDevotee;
         }
 
