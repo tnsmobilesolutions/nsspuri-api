@@ -1197,6 +1197,11 @@ let pipeline1 = [
   }else{
     numberOfDevotee = 0
   }
+  let couponNumber
+  let coupononDate = await allmodel.prasadModel.find({couponDevotee:true,"couponPrasad.date": req.query.date});
+  if(coupononDate){
+    
+  }
             const countResult = await allmodel.prasadModel.aggregate(pipeline1);
               let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
 
