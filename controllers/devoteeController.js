@@ -1201,7 +1201,7 @@ let allDevotee = devoteeprasadTakenCount + numberOfDevotee
    
   }
 
-  async function offlineAddDevoteeCounter(req,res) {
+  async function offlinePrasadNonDevoteeCounter(req,res) {
    try {
     let data = req.body
     let allTimings = await allmodel.settings.findOne();
@@ -1212,9 +1212,9 @@ let allDevotee = devoteeprasadTakenCount + numberOfDevotee
     let ratraStartTime = allTimings.ratraStartTime
     let ratraEndTime = allTimings.ratraEndTime
 
-const isBalyaTime = await compareThreeTime(data.currentTime, balyaStartTime, balyaEndTime);
-const isMadhyannaTime = await compareThreeTime(data.currentTime, madhyanaStartTime, madhyanaEndTime);
-const isRatraTime = await compareThreeTime(data.currentTime, ratraStartTime, ratraEndTime);
+const isBalyaTime = await compareThreeTime(data.time, balyaStartTime, balyaEndTime);
+const isMadhyannaTime = await compareThreeTime(data.time, madhyanaStartTime, madhyanaEndTime);
+const isRatraTime = await compareThreeTime(data.time, ratraStartTime, ratraEndTime);
 let addData = {} ;
 let updatedPrasad
 let offlineprasadDetailsfordate = await allmodel.prasadModel.findOne({"outsideDevotee": true,"date":data.date})
@@ -1281,7 +1281,7 @@ module.exports = {
     getSettings,
     prasdCountNow,
     offlinePrasad,
-    offlineAddDevoteeCounter
+    offlinePrasadNonDevoteeCounter
 }
 
 //

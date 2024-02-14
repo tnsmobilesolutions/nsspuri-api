@@ -63,7 +63,7 @@ getRequest("/prasadTimingSetting", devoteeController.getSettings);
 getRequest("/prasadCountByselectdate", devoteeController.prasadCountByselectdate);
 getRequest("/prasdCountNow", devoteeController.prasdCountNow);
 putRequest("/offlinePrasad", devoteeController.offlinePrasad);
-putRequest("/offlineAddDevoteeCounter", devoteeController.offlineAddDevoteeCounter);
+putRequest("/offlinePrasadNonDevoteeCounter", devoteeController.offlinePrasadNonDevoteeCounter);
 // getRequest("/getPrasad/:code", devoteeController.prasdUpdatedevotee);
 
 
