@@ -113,7 +113,7 @@ const prasdUpdateDevotee = async (req, res) => {
                const isBalyaTime = await compareThreeTime(currentTime, balyaStartTime, balyaEndTime);
                const isMadhyannaTime = await compareThreeTime(currentTime, madhyanaStartTime, madhyanaEndTime);
                const isRatraTime = await compareThreeTime(currentTime, ratraStartTime, ratraEndTime);
-if(code > 1000000){
+if(code > 10000000){
     const couponDevotee =  await allmodel.prasadModel.findOne({couponCode: code})
     if(!couponDevotee){
         return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.NO_COUPONCODE}, devoteeData : null})
