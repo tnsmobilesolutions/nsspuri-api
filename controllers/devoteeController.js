@@ -35,7 +35,6 @@ const devotee_create = async (req, res) => {
         res.status(400).json({"error":error.message});
     }
 };
-
 const updateSettings = async (req, res) => {
     try {
         let data = req.body;
@@ -93,10 +92,9 @@ sort = {devoteeCode: 1}
 }
 //update prasad by qr code
 const prasdUpdateDevotee = async (req, res) => {
-
     try {
-        
         let data = req.body;
+        let code = parseInt(req.params.code, 10)
         let allTimings = await allmodel.settings.findOne();
         if(allTimings){
             let balyaStartTime = allTimings.balyaStartTime
@@ -110,12 +108,64 @@ const prasdUpdateDevotee = async (req, res) => {
             let prasadThirdDate = allTimings.prasadThirdDate     
             const currentDate = data.date;
             const currentTime = data.time;
-
             const prasadDates = [prasadFirstDate, prasadSecondDate, prasadThirdDate];
+               // Check if the current time falls within any meal timings
+               const isBalyaTime = await compareThreeTime(currentTime, balyaStartTime, balyaEndTime);
+               const isMadhyannaTime = await compareThreeTime(currentTime, madhyanaStartTime, madhyanaEndTime);
+               const isRatraTime = await compareThreeTime(currentTime, ratraStartTime, ratraEndTime);
+if(code > 1000000){
+    const couponDevotee =  await allmodel.prasadModel.findOne({couponCode: code})
+    if(!couponDevotee){
+        return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.NO_COUPONCODE}, devoteeData : null})
+}else{
+    const couponDevoteewithDate =  await allmodel.prasadModel.findOne({couponDevotee:true,couponCode: code,"couponPrasad.date":currentDate})
+    if(couponDevoteewithDate){
+        if(isBalyaTime){
+            console.log("couponDevoteewithDate.couponPrasad",couponDevoteewithDate.couponPrasad)
+            couponDevoteewithDate.couponPrasad.forEach((prasad) => {
+                if (prasad.date === currentDate) {
+                    if (prasad.balyaCount > 0) {
+                        prasad.balyaCount--;
+                        prasad.balyaTiming.push(currentTime);
+                    } else {
+                        return res.status(200).json({ status: "Failure", error: { errorCode: 1001, message: messages.LIMIT_EXCEEDED }, devoteeData: null });
+                    }
+                }
+            });
 
-          
-            const devoteeDetails = await allmodel.devoteemodel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
-            
+
+        }if(isMadhyannaTime){
+            couponDevoteewithDate.couponPrasad.forEach((prasad) => {
+                if (prasad.date === currentDate) {
+                    if (prasad.madhyanaCount > 0) {
+                        prasad.madhyanaCount--;
+                        prasad.madhyanaTiming.push(currentTime);
+                    } else {
+                        return res.status(200).json({ status: "Failure", error: { errorCode: 1001, message: messages.LIMIT_EXCEEDED }, devoteeData: null });
+                    }
+                }
+            });
+        }if(isRatraTime){
+            couponDevoteewithDate.couponPrasad.forEach((prasad) => {
+                if (prasad.date === currentDate) {
+                    if (prasad.ratraCount > 0) {
+                        prasad.ratraCount--;
+                        prasad.ratraTiming.push(currentTime);
+                    } else {
+                        return res.status(200).json({ status: "Failure", error: { errorCode: 1001, message: messages.LIMIT_EXCEEDED }, devoteeData: null });
+                    }
+                }
+            });
+        }
+        await couponDevoteewithDate.save()
+        return res.status(200).json({ status: "Success",error: {errorCode :1001,message: messages.SCAN_SUCCESSFULLY}, devoteeData : null})
+    }else {
+        return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.LIMIT_EXCEEDED}, devoteeData : null})
+    }
+
+}
+}
+            const devoteeDetails = await allmodel.devoteemodel.findOne({ devoteeCode: code });
             if (!devoteeDetails) {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.NO_DEVOTEEFOUND}, devoteeData : devoteeDetails});} 
     
             if(devoteeDetails.status == "blacklisted"  ) {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.BLACKLISTED_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
@@ -138,11 +188,6 @@ const prasdUpdateDevotee = async (req, res) => {
                         // If all timings are updated, show an error that prasad is already taken for today
                         return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN}, devoteeData : devoteeDetails});
                     }else {
-                        // Check if the current time falls within any meal timings
-                        const isBalyaTime = await compareThreeTime(currentTime, balyaStartTime, balyaEndTime);
-                        const isMadhyannaTime = await compareThreeTime(currentTime, madhyanaStartTime, madhyanaEndTime);
-                        const isRatraTime = await compareThreeTime(currentTime, ratraStartTime, ratraEndTime);
-                      
                         let prasadFound = false;
         
                         const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
@@ -1259,11 +1304,8 @@ return res.status(200).json({ status: "Success",error: null, prasad : updatedPra
     let data = req.body
     data.couponDevotee = true;
     let existingCoupon = await allmodel.prasadModel.findOne({couponCode:data.couponCode})
-    // if(existingCoupon){
-     
-    //    return res.status(500).json("coupon exists !")
-    // }
-    let createCoupon = await allmodel.prasadModel.findOneAndUpdate({couponCode:data.couponCode},{$set:data},{upsert:true,new: true})
+
+    let createCoupon = await allmodel.prasadModel.findOneAndUpdate({couponCode:data.couponCode},data,{upsert:true,new: true})
     return res.status(200).json(createCoupon)
     
    } catch (error) {
