@@ -733,7 +733,7 @@ async function countDevoteePrasadtaken(desiredDate, timeStamp) {
         },
       ]);
       let numberOfDevotee;
-      let offlineDevoteeCounter = await allmodel.prasadModel.findOne({outsideDevotee : true,date :req.query.date})
+      let offlineDevoteeCounter = await allmodel.prasadModel.findOne({outsideDevotee : true,date :desiredDate})
       if(offlineDevoteeCounter){
         if(timeStamp == "prasad.balyaTiming"){
             numberOfDevotee = offlineDevoteeCounter.numberOfDevoteeBalyaTaken || 0
@@ -752,7 +752,6 @@ async function countDevoteePrasadtaken(desiredDate, timeStamp) {
     let allDevotee = devoteeprasadTakenCount + numberOfDevotee
                   return allDevotee;
 }
-
        let allDevotee = await devotee.find().sort({name:1})
        let currentDevotee = await devotee.findById(req.user._id)
 let data;
