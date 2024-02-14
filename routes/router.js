@@ -64,6 +64,9 @@ getRequest("/prasadCountByselectdate", devoteeController.prasadCountByselectdate
 getRequest("/prasdCountNow", devoteeController.prasdCountNow);
 putRequest("/offlinePrasad", devoteeController.offlinePrasad);
 putRequest("/offlinePrasadNonDevoteeCounter", devoteeController.offlinePrasadNonDevoteeCounter);
+putRequest("/createCoupon", devoteeController.createEditCoupon);
+getRequest("/viewCoupon/:code", devoteeController.viewCoupon);
+
 // getRequest("/getPrasad/:code", devoteeController.prasdUpdatedevotee);
 
 

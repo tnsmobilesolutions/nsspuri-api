@@ -1254,6 +1254,38 @@ return res.status(200).json({ status: "Success",error: null, prasad : updatedPra
    }
   }
 
+  async function createEditCoupon(req,res) {
+   try {
+    let data = req.body
+    data.couponDevotee = true;
+    let existingCoupon = await allmodel.prasadModel.findOne({couponCode:data.couponCode})
+    // if(existingCoupon){
+     
+    //    return res.status(500).json("coupon exists !")
+    // }
+    let createCoupon = await allmodel.prasadModel.findOneAndUpdate({couponCode:data.couponCode},{$set:data},{upsert:true,new: true})
+    return res.status(200).json(createCoupon)
+    
+   } catch (error) {
+    console.log("error : ",error)
+    return res.status(500).json(error)
+   }
+  }
+  async function viewCoupon(req,res) {
+   try {
+   
+    let existingCoupon = await allmodel.prasadModel.findOne({couponCode:req.params.code})
+    if(existingCoupon){
+        return res.status(200).json({existingCoupon})
+    }else{
+        return res.status(200).json({existingCoupon: null})
+    }
+   } catch (error) {
+    console.log("error : ",error)
+    return res.status(500).json(error)
+   }
+  }
+
     
 
 
@@ -1280,7 +1312,9 @@ module.exports = {
     getSettings,
     prasdCountNow,
     offlinePrasad,
-    offlinePrasadNonDevoteeCounter
+    offlinePrasadNonDevoteeCounter,
+    createEditCoupon,
+    viewCoupon
 }
 
 //
