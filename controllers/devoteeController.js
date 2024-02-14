@@ -7,7 +7,7 @@ const { model } = require("mongoose");
 const dotenv = require("dotenv").config();
 const messages = require("./messages/message");
 const settings = require("../model/settings");
-
+const uuid = require("uuid")
 
 
 // Create Devotee
@@ -35,7 +35,6 @@ const devotee_create = async (req, res) => {
         res.status(400).json({"error":error.message});
     }
 };
-
 const updateSettings = async (req, res) => {
     try {
         let data = req.body;
@@ -93,10 +92,9 @@ sort = {devoteeCode: 1}
 }
 //update prasad by qr code
 const prasdUpdateDevotee = async (req, res) => {
-
     try {
-        
         let data = req.body;
+        let code = parseInt(req.params.code, 10)
         let allTimings = await allmodel.settings.findOne();
         if(allTimings){
             let balyaStartTime = allTimings.balyaStartTime
@@ -110,12 +108,64 @@ const prasdUpdateDevotee = async (req, res) => {
             let prasadThirdDate = allTimings.prasadThirdDate     
             const currentDate = data.date;
             const currentTime = data.time;
-
             const prasadDates = [prasadFirstDate, prasadSecondDate, prasadThirdDate];
+               // Check if the current time falls within any meal timings
+               const isBalyaTime = await compareThreeTime(currentTime, balyaStartTime, balyaEndTime);
+               const isMadhyannaTime = await compareThreeTime(currentTime, madhyanaStartTime, madhyanaEndTime);
+               const isRatraTime = await compareThreeTime(currentTime, ratraStartTime, ratraEndTime);
+if(code > 1000000){
+    const couponDevotee =  await allmodel.prasadModel.findOne({couponCode: code})
+    if(!couponDevotee){
+        return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.NO_COUPONCODE}, devoteeData : null})
+}else{
+    const couponDevoteewithDate =  await allmodel.prasadModel.findOne({couponDevotee:true,couponCode: code,"couponPrasad.date":currentDate})
+    if(couponDevoteewithDate){
+        if(isBalyaTime){
+            console.log("couponDevoteewithDate.couponPrasad",couponDevoteewithDate.couponPrasad)
+            couponDevoteewithDate.couponPrasad.forEach((prasad) => {
+                if (prasad.date === currentDate) {
+                    if (prasad.balyaCount > 0) {
+                        prasad.balyaCount--;
+                        prasad.balyaTiming.push(currentTime);
+                    } else {
+                        return res.status(200).json({ status: "Failure", error: { errorCode: 1001, message: messages.LIMIT_EXCEEDED }, devoteeData: null });
+                    }
+                }
+            });
 
-          
-            const devoteeDetails = await allmodel.devoteemodel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
-            
+
+        }if(isMadhyannaTime){
+            couponDevoteewithDate.couponPrasad.forEach((prasad) => {
+                if (prasad.date === currentDate) {
+                    if (prasad.madhyanaCount > 0) {
+                        prasad.madhyanaCount--;
+                        prasad.madhyanaTiming.push(currentTime);
+                    } else {
+                        return res.status(200).json({ status: "Failure", error: { errorCode: 1001, message: messages.LIMIT_EXCEEDED }, devoteeData: null });
+                    }
+                }
+            });
+        }if(isRatraTime){
+            couponDevoteewithDate.couponPrasad.forEach((prasad) => {
+                if (prasad.date === currentDate) {
+                    if (prasad.ratraCount > 0) {
+                        prasad.ratraCount--;
+                        prasad.ratraTiming.push(currentTime);
+                    } else {
+                        return res.status(200).json({ status: "Failure", error: { errorCode: 1001, message: messages.LIMIT_EXCEEDED }, devoteeData: null });
+                    }
+                }
+            });
+        }
+        await couponDevoteewithDate.save()
+        return res.status(200).json({ status: "Success",error: {errorCode :1001,message: messages.SCAN_SUCCESSFULLY}, devoteeData : null})
+    }else {
+        return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.LIMIT_EXCEEDED}, devoteeData : null})
+    }
+
+}
+}
+            const devoteeDetails = await allmodel.devoteemodel.findOne({ devoteeCode: code });
             if (!devoteeDetails) {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.NO_DEVOTEEFOUND}, devoteeData : devoteeDetails});} 
     
             if(devoteeDetails.status == "blacklisted"  ) {return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.BLACKLISTED_DEVOTEE_SCAN}, devoteeData : devoteeDetails});}
@@ -138,11 +188,6 @@ const prasdUpdateDevotee = async (req, res) => {
                         // If all timings are updated, show an error that prasad is already taken for today
                         return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN}, devoteeData : devoteeDetails});
                     }else {
-                        // Check if the current time falls within any meal timings
-                        const isBalyaTime = await compareThreeTime(currentTime, balyaStartTime, balyaEndTime);
-                        const isMadhyannaTime = await compareThreeTime(currentTime, madhyanaStartTime, madhyanaEndTime);
-                        const isRatraTime = await compareThreeTime(currentTime, ratraStartTime, ratraEndTime);
-                      
                         let prasadFound = false;
         
                         const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
@@ -732,10 +777,46 @@ async function countDevoteePrasadtaken(desiredDate, timeStamp) {
           },
         },
       ]);
-      let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
-      return devoteeprasadTakenCount;
+      let numberOfDevotee;
+      let offlineDevoteeCounter = await allmodel.prasadModel.findOne({outsideDevotee : true,date :desiredDate})
+      if(offlineDevoteeCounter){
+        if(timeStamp == "prasad.balyaTiming"){
+            numberOfDevotee = offlineDevoteeCounter.numberOfDevoteeBalyaTaken || 0
+        }else if(timeStamp == "prasad.madhyanaTiming"){
+            numberOfDevotee = offlineDevoteeCounter.numberOfDevoteeMadhyanaTaken || 0
+        }else if(timeStamp == "prasad.ratraTiming"){
+            numberOfDevotee = offlineDevoteeCounter.numberOfDevoteeRatraTaken || 0
+        }else{
+            numberOfDevotee = 0
+        }
+      }else{
+        numberOfDevotee = 0
+      }
+      let couponNumber =0
+      let coupononDate = await allmodel.prasadModel.find({couponDevotee:true,"couponPrasad.date": desiredDate})
+      if(coupononDate.length > 0){
+        coupononDate.forEach((coupon)=>{
+            coupon.couponPrasad.forEach((prasadCoupon)=>{
+                if(prasadCoupon.date === desiredDate){
+                    if (timeStamp === "prasad.balyaTiming") {
+                        couponNumber += prasadCoupon.balyaTiming.length || 0;
+                    } else if (timeStamp === "prasad.madhyanaTiming") {
+                        couponNumber += prasadCoupon.madhyanaTiming.length || 0;
+                    } else if (timeStamp === "prasad.ratraTiming") {
+                        couponNumber += prasadCoupon.ratraTiming.length || 0;
+                    }else{
+                        couponNumber = 0
+                    }
+                }
+            })
+    
+        })
+      }
+                  let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+    
+    let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
+                  return allDevotee;
 }
-
        let allDevotee = await devotee.find().sort({name:1})
        let currentDevotee = await devotee.findById(req.user._id)
 let data;
@@ -900,8 +981,26 @@ const prasadCount = async(req,res) =>{
             },
           },
         ]);
-        let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
-        return devoteeprasadTakenCount;
+        let numberOfDevotee;
+        let offlineDevoteeCounter = await allmodel.prasadModel.findOne({outsideDevotee : true,date :req.query.date})
+        if(offlineDevoteeCounter){
+          if(desiredDate == "prasad.balyaTiming"){
+              numberOfDevotee = offlineDevoteeCounter.numberOfDevoteeBalyaTaken || 0
+          }else if(desiredDate == "prasad.madhyanaTiming"){
+              numberOfDevotee = offlineDevoteeCounter.numberOfDevoteeMadhyanaTaken || 0
+          }else if(desiredDate == "prasad.ratraTiming"){
+              numberOfDevotee = offlineDevoteeCounter.numberOfDevoteeRatraTaken || 0
+          }else{
+              numberOfDevotee = 0
+          }
+        }else{
+          numberOfDevotee = 0
+        }
+                  
+                    let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+      
+      let allDevotee = devoteeprasadTakenCount + numberOfDevotee
+                    return allDevotee;
     }
         let data = [];
         if(firstDate){
@@ -1000,8 +1099,46 @@ const prasadCountByselectdate = async(req,res)=>{
           },
         },
       ]);
-      let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
-      return devoteeprasadTakenCount;
+
+   let numberOfDevotee;
+  let offlineDevoteeCounter = await allmodel.prasadModel.findOne({outsideDevotee : true,date :desiredDate})
+  if(offlineDevoteeCounter){
+    if(timeStamp == "prasad.balyaTiming"){
+        numberOfDevotee = offlineDevoteeCounter.numberOfDevoteeBalyaTaken || 0
+    }else if(timeStamp == "prasad.madhyanaTiming"){
+        numberOfDevotee = offlineDevoteeCounter.numberOfDevoteeMadhyanaTaken || 0
+    }else if(timeStamp == "prasad.ratraTiming"){
+        numberOfDevotee = offlineDevoteeCounter.numberOfDevoteeRatraTaken || 0
+    }else{
+        numberOfDevotee = 0
+    }
+  }else{
+    numberOfDevotee = 0
+  }
+  let couponNumber =0
+  let coupononDate = await allmodel.prasadModel.find({couponDevotee:true,"couponPrasad.date": desiredDate})
+  if(coupononDate.length > 0){
+    coupononDate.forEach((coupon)=>{
+        coupon.couponPrasad.forEach((prasadCoupon)=>{
+            if(prasadCoupon.date === desiredDate){
+                if (timeStamp === "prasad.balyaTiming") {
+                    couponNumber += prasadCoupon.balyaTiming.length || 0;
+                } else if (timeStamp === "prasad.madhyanaTiming") {
+                    couponNumber += prasadCoupon.madhyanaTiming.length || 0;
+                } else if (timeStamp === "prasad.ratraTiming") {
+                    couponNumber += prasadCoupon.ratraTiming.length || 0;
+                }else{
+                    couponNumber = 0
+                }
+            }
+        })
+
+    })
+  }
+              let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+
+let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
+              return allDevotee;
      
     }
    
@@ -1032,7 +1169,6 @@ const prasadCountByselectdate = async(req,res)=>{
   const prasdCountNow = async(req,res)=>{
     try {
         let allTimings = await allmodel.settings.findOne();
-   
             let balyaStartTime = allTimings.balyaStartTime
             let balyaEndTime = allTimings.balyaEndTime
             let madhyanaStartTime = allTimings.madhyanaStartTime
@@ -1086,9 +1222,46 @@ let pipeline1 = [
       },
     },
   ]
+  let numberOfDevotee;
+  let offlineDevoteeCounter = await allmodel.prasadModel.findOne({outsideDevotee : true,date :desiredDate})
+  if(offlineDevoteeCounter){
+    if(timeStamp == "prasad.balyaTiming"){
+        numberOfDevotee = offlineDevoteeCounter.numberOfDevoteeBalyaTaken || 0
+    }else if(timeStamp == "prasad.madhyanaTiming"){
+        numberOfDevotee = offlineDevoteeCounter.numberOfDevoteeMadhyanaTaken || 0
+    }else if(timeStamp == "prasad.ratraTiming"){
+        numberOfDevotee = offlineDevoteeCounter.numberOfDevoteeRatraTaken || 0
+    }else{
+        numberOfDevotee = 0
+    }
+  }else{
+    numberOfDevotee = 0
+  }
+  let couponNumber =0
+  let coupononDate = await allmodel.prasadModel.find({couponDevotee:true,"couponPrasad.date": desiredDate})
+  if(coupononDate.length > 0){
+    coupononDate.forEach((coupon)=>{
+        coupon.couponPrasad.forEach((prasadCoupon)=>{
+            if(prasadCoupon.date === desiredDate){
+                if (timeStamp === "prasad.balyaTiming") {
+                    couponNumber += prasadCoupon.balyaTiming.length || 0;
+                } else if (timeStamp === "prasad.madhyanaTiming") {
+                    couponNumber += prasadCoupon.madhyanaTiming.length || 0;
+                } else if (timeStamp === "prasad.ratraTiming") {
+                    couponNumber += prasadCoupon.ratraTiming.length || 0;
+                }else{
+                    couponNumber = 0
+                }
+            }
+        })
+
+    })
+  }
             const countResult = await allmodel.prasadModel.aggregate(pipeline1);
               let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
-              return devoteeprasadTakenCount;
+
+let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
+              return allDevotee;
         }
 
         let data;
@@ -1132,7 +1305,7 @@ let pipeline1 = [
    
   }
 
-  async function offlineAddDevoteeCounter(req,res) {
+  async function offlinePrasadNonDevoteeCounter(req,res) {
    try {
     let data = req.body
     let allTimings = await allmodel.settings.findOne();
@@ -1143,53 +1316,75 @@ let pipeline1 = [
     let ratraStartTime = allTimings.ratraStartTime
     let ratraEndTime = allTimings.ratraEndTime
 
-const isBalyaTime = await compareThreeTime(req.query.currentTime, balyaStartTime, balyaEndTime);
-const isMadhyannaTime = await compareThreeTime(req.query.currentTime, madhyanaStartTime, madhyanaEndTime);
-const isRatraTime = await compareThreeTime(req.query.currentTime, ratraStartTime, ratraEndTime);
-let addData ;
-if(isBalyaTime){
-    addData = {
-"outsideDevotee": true,
-"numberOfDevotee":data.numberOfDevotee,
-"devoteeId": data.devoteeId,
-"prasad":[{
-       date:data.date,
-        balyaTiming: data.balyaTiming,
-        madhyanaTiming: "",
-        ratraTiming: "",
-}]
+const isBalyaTime = await compareThreeTime(data.time, balyaStartTime, balyaEndTime);
+const isMadhyannaTime = await compareThreeTime(data.time, madhyanaStartTime, madhyanaEndTime);
+const isRatraTime = await compareThreeTime(data.time, ratraStartTime, ratraEndTime);
+let addData = {} ;
+let updatedPrasad
+let offlineprasadDetailsfordate = await allmodel.prasadModel.findOne({"outsideDevotee": true,"date":data.date})
+if(offlineprasadDetailsfordate){
+    if (isBalyaTime) {
+        addData.numberOfDevoteeBalyaTaken = (offlineprasadDetailsfordate.numberOfDevoteeBalyaTaken || 0) + data.numberOfDevotee;
+    } else if (isMadhyannaTime) {
+        addData.numberOfDevoteeMadhyanaTaken = (offlineprasadDetailsfordate.numberOfDevoteeMadhyanaTaken || 0) + data.numberOfDevotee;
+    } else if (isRatraTime) {
+        addData.numberOfDevoteeRatraTaken = (offlineprasadDetailsfordate.numberOfDevoteeRatraTaken || 0) + data.numberOfDevotee;
+    } else {
+        return res.status(200).json({ status: "Failure", error: { errorCode: 1001, message: messages.INVALID_TIME }, prasad: null });
     }
-}else if (isMadhyannaTime){
-    addData = {
-        "outsideDevotee": true,
-        "numberOfDevotee":data.numberOfDevotee,
-        "devoteeId": data.devoteeId,
-        "prasad":[{
-               date:data.date,
-                balyaTiming: "",
-                madhyanaTiming: data.madhyanaTiming,
-                ratraTiming: "",
-        }]
-            } 
-}else if (isRatraTime){
-    addData = {
-        "outsideDevotee": true,
-        "numberOfDevotee":data.numberOfDevotee,
-        "devoteeId": data.devoteeId,
-        "prasad":[{
-               date:data.date,
-                balyaTiming: "",
-                madhyanaTiming: "",
-                ratraTiming: data.ratraTiming,
-        }]
-            }
-}else {
-    return;
+    updatedPrasad = await allmodel.prasadModel.findOneAndUpdate({"outsideDevotee": true,"date":data.date},{$set:addData});
+}else{
+    if(isBalyaTime){
+        addData.outsideDevotee = true
+        addData.date = data.date
+        addData.numberOfDevoteeBalyaTaken = data.numberOfDevotee
+        }else if (isMadhyannaTime){
+            addData.outsideDevotee = true
+            addData.date = data.date
+            addData.numberOfDevoteeMadhyanaTaken = data.numberOfDevotee
+        }else if(isRatraTime){
+            addData.outsideDevotee = true
+            addData.date = data.date
+            addData.numberOfDevoteeRatraTaken = data.numberOfDevotee
+        }else{
+            return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.INVALID_TIME}, prasad : null})
+        }
+        // addData.devoteeId = uuid.v4()
+        updatedPrasad = await allmodel.prasadModel.create(addData);
 }
-let returnData = await allmodel.prasadModel.create(addData);
-res.status(200).json(returnData);
+return res.status(200).json({ status: "Success",error: null, prasad : updatedPrasad})
    } catch (error) {
+    console.log("error in offline addcounter ---- ",error)
     res.status(500).json({error: error})
+   }
+  }
+
+  async function createEditCoupon(req,res) {
+   try {
+    let data = req.body
+    data.couponDevotee = true;
+    let existingCoupon = await allmodel.prasadModel.findOne({couponCode:data.couponCode})
+
+    let createCoupon = await allmodel.prasadModel.findOneAndUpdate({couponCode:data.couponCode},data,{upsert:true,new: true})
+    return res.status(200).json(createCoupon)
+    
+   } catch (error) {
+    console.log("error : ",error)
+    return res.status(500).json(error)
+   }
+  }
+  async function viewCoupon(req,res) {
+   try {
+   
+    let existingCoupon = await allmodel.prasadModel.findOne({couponCode:req.params.code})
+    if(existingCoupon){
+        return res.status(200).json({existingCoupon})
+    }else{
+        return res.status(200).json({existingCoupon: null})
+    }
+   } catch (error) {
+    console.log("error : ",error)
+    return res.status(500).json(error)
    }
   }
 
@@ -1219,7 +1414,9 @@ module.exports = {
     getSettings,
     prasdCountNow,
     offlinePrasad,
-    offlineAddDevoteeCounter
+    offlinePrasadNonDevoteeCounter,
+    createEditCoupon,
+    viewCoupon
 }
 
 //

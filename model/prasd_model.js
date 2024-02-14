@@ -3,18 +3,30 @@ const moment = require("moment-timezone");
 
 let prasdSchema = mongoose.Schema({
     outsideDevotee:Boolean,
-    numberOfDevotee: Number,
+    couponDevotee:Boolean,
+    numberOfDevoteeBalyaTaken: Number,
+    numberOfDevoteeMadhyanaTaken: Number,
+    numberOfDevoteeRatraTaken: Number,
+    date:String,
     prasadid : String,
-    devoteeId: { type: String, unique: true, required: true },
-    devoteeCode: { type: Number, unique: true, required: true },
+    devoteeId: String,
+    devoteeCode: Number,
+    couponCode: Number,
+    couponPrasad:[{
+        date: String,
+        balyaCount:Number,
+        balyaTiming: [],
+        madhyanaTiming:[],
+        ratraTiming:[],
+        madhyanaCount:Number,
+        ratraCount:Number
+    }],
     prasad :[{
         date: String,
         balyaTiming: String,
         madhyanaTiming: String,
         ratraTiming: String,
     }]
-},{
-    timestamps : true
 });
 
 module.exports = mongoose.model("prasad", prasdSchema);
