@@ -63,7 +63,7 @@ getRequest("/prasadTimingSetting", devoteeController.getSettings);
 getRequest("/prasadCountByselectdate", devoteeController.prasadCountByselectdate);
 getRequest("/prasdCountNow", devoteeController.prasdCountNow);
 putRequest("/offlinePrasad", devoteeController.offlinePrasad);
-putRequest("/offlineAddDevoteeCounter", devoteeController.offlinePrasad);
+putRequest("/offlineAddDevoteeCounter", devoteeController.offlineAddDevoteeCounter);
 // getRequest("/getPrasad/:code", devoteeController.prasdUpdatedevotee);
 
 
@@ -101,7 +101,6 @@ putRequest("/address/:id", addressController.address_update);
 getRequest("/address", addressController.address_all);
 getRequest("/address/:id", addressController.address_details);
 deleteRequest("/address/:id", addressController.address_delete);
-
 router.put("/updateFromDB",allController.dbController.updateDOB)
 
 module.exports = router;
