@@ -792,9 +792,29 @@ async function countDevoteePrasadtaken(desiredDate, timeStamp) {
       }else{
         numberOfDevotee = 0
       }
+      let couponNumber =0
+      let coupononDate = await allmodel.prasadModel.find({couponDevotee:true,"couponPrasad.date": desiredDate})
+      if(coupononDate.length > 0){
+        coupononDate.forEach((coupon)=>{
+            coupon.couponPrasad.forEach((prasadCoupon)=>{
+                if(prasadCoupon.date === desiredDate){
+                    if (timeStamp === "prasad.balyaTiming") {
+                        couponNumber += prasadCoupon.balyaTiming.length || 0;
+                    } else if (timeStamp === "prasad.madhyanaTiming") {
+                        couponNumber += prasadCoupon.madhyanaTiming.length || 0;
+                    } else if (timeStamp === "prasad.ratraTiming") {
+                        couponNumber += prasadCoupon.ratraTiming.length || 0;
+                    }else{
+                        couponNumber = 0
+                    }
+                }
+            })
+    
+        })
+      }
                   let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
     
-    let allDevotee = devoteeprasadTakenCount + numberOfDevotee
+    let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
                   return allDevotee;
 }
        let allDevotee = await devotee.find().sort({name:1})
@@ -1081,7 +1101,7 @@ const prasadCountByselectdate = async(req,res)=>{
       ]);
 
    let numberOfDevotee;
-  let offlineDevoteeCounter = await allmodel.prasadModel.findOne({outsideDevotee : true,date :req.query.date})
+  let offlineDevoteeCounter = await allmodel.prasadModel.findOne({outsideDevotee : true,date :desiredDate})
   if(offlineDevoteeCounter){
     if(timeStamp == "prasad.balyaTiming"){
         numberOfDevotee = offlineDevoteeCounter.numberOfDevoteeBalyaTaken || 0
@@ -1095,9 +1115,29 @@ const prasadCountByselectdate = async(req,res)=>{
   }else{
     numberOfDevotee = 0
   }
+  let couponNumber =0
+  let coupononDate = await allmodel.prasadModel.find({couponDevotee:true,"couponPrasad.date": desiredDate})
+  if(coupononDate.length > 0){
+    coupononDate.forEach((coupon)=>{
+        coupon.couponPrasad.forEach((prasadCoupon)=>{
+            if(prasadCoupon.date === desiredDate){
+                if (timeStamp === "prasad.balyaTiming") {
+                    couponNumber += prasadCoupon.balyaTiming.length || 0;
+                } else if (timeStamp === "prasad.madhyanaTiming") {
+                    couponNumber += prasadCoupon.madhyanaTiming.length || 0;
+                } else if (timeStamp === "prasad.ratraTiming") {
+                    couponNumber += prasadCoupon.ratraTiming.length || 0;
+                }else{
+                    couponNumber = 0
+                }
+            }
+        })
+
+    })
+  }
               let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
 
-let allDevotee = devoteeprasadTakenCount + numberOfDevotee
+let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
               return allDevotee;
      
     }
@@ -1183,7 +1223,7 @@ let pipeline1 = [
     },
   ]
   let numberOfDevotee;
-  let offlineDevoteeCounter = await allmodel.prasadModel.findOne({outsideDevotee : true,date :req.query.date})
+  let offlineDevoteeCounter = await allmodel.prasadModel.findOne({outsideDevotee : true,date :desiredDate})
   if(offlineDevoteeCounter){
     if(timeStamp == "prasad.balyaTiming"){
         numberOfDevotee = offlineDevoteeCounter.numberOfDevoteeBalyaTaken || 0
@@ -1198,11 +1238,11 @@ let pipeline1 = [
     numberOfDevotee = 0
   }
   let couponNumber =0
-  let coupononDate = await allmodel.prasadModel.find({couponDevotee:true,"couponPrasad.date": req.query.date})
+  let coupononDate = await allmodel.prasadModel.find({couponDevotee:true,"couponPrasad.date": desiredDate})
   if(coupononDate.length > 0){
     coupononDate.forEach((coupon)=>{
         coupon.couponPrasad.forEach((prasadCoupon)=>{
-            if(prasadCoupon.date === req.query.date){
+            if(prasadCoupon.date === desiredDate){
                 if (timeStamp === "prasad.balyaTiming") {
                     couponNumber += prasadCoupon.balyaTiming.length || 0;
                 } else if (timeStamp === "prasad.madhyanaTiming") {
