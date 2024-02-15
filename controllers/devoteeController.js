@@ -119,50 +119,36 @@ if(code > 1000000){
         return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.NO_COUPONCODE}, devoteeData : null})
 }else{
     const couponDevoteewithDate =  await allmodel.prasadModel.findOne({couponDevotee:true,couponCode: code,"couponPrasad.date":currentDate})
-    if(couponDevoteewithDate){
-        if(isBalyaTime){
-            console.log("couponDevoteewithDate.couponPrasad",couponDevoteewithDate.couponPrasad)
-            couponDevoteewithDate.couponPrasad.forEach((prasad) => {
-                if (prasad.date === currentDate) {
-                    if (prasad.balyaCount > 0) {
-                        prasad.balyaCount--;
-                        prasad.balyaTiming.push(currentTime);
-                    } else {
-                        return res.status(200).json({ status: "Failure", error: { errorCode: 1001, message: messages.LIMIT_EXCEEDED }, devoteeData: null });
-                    }
+    let limitmessage;
+    if (couponDevoteewithDate) {
+        let limitExceeded = false;
+    
+        for (let prasad of couponDevoteewithDate.couponPrasad) {
+            if (prasad.date === currentDate) {
+                if (isBalyaTime && prasad.balyaCount > 0) {
+                    prasad.balyaCount--;
+                    prasad.balyaTiming.push(currentTime);
+                } else if (isMadhyannaTime && prasad.madhyanaCount > 0) {
+                    prasad.madhyanaCount--;
+                    prasad.madhyanaTiming.push(currentTime);
+                } else if (isRatraTime && prasad.ratraCount > 0) {
+                    prasad.ratraCount--;
+                    prasad.ratraTiming.push(currentTime);
+                } else {
+                    limitExceeded = true;
+                    break;
                 }
-            });
-
-
-        }if(isMadhyannaTime){
-            couponDevoteewithDate.couponPrasad.forEach((prasad) => {
-                if (prasad.date === currentDate) {
-                    if (prasad.madhyanaCount > 0) {
-                        prasad.madhyanaCount--;
-                        prasad.madhyanaTiming.push(currentTime);
-                    } else {
-                        return res.status(200).json({ status: "Failure", error: { errorCode: 1001, message: messages.LIMIT_EXCEEDED }, devoteeData: null });
-                    }
-                }
-            });
-        }if(isRatraTime){
-            couponDevoteewithDate.couponPrasad.forEach((prasad) => {
-                if (prasad.date === currentDate) {
-                    if (prasad.ratraCount > 0) {
-                        prasad.ratraCount--;
-                        prasad.ratraTiming.push(currentTime);
-                    } else {
-                        return res.status(200).json({ status: "Failure", error: { errorCode: 1001, message: messages.LIMIT_EXCEEDED }, devoteeData: null });
-                    }
-                }
-            });
+            }
         }
-        await couponDevoteewithDate.save()
-        return res.status(200).json({ status: "Success",error: {errorCode :1001,message: messages.SCAN_SUCCESSFULLY}, devoteeData : null})
-    }else {
-        return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.LIMIT_EXCEEDED}, devoteeData : null})
+        if (limitExceeded) {
+            return res.status(200).json({ status: "Failure", error: { errorCode: 1001, message: messages.LIMIT_EXCEEDED }, devoteeData: null });
+        }
+    
+        await couponDevoteewithDate.save();
+        return res.status(200).json({ status: "Success", error: { errorCode: 1001, message: messages.SCAN_SUCCESSFULLY }, devoteeData: null });
+    } else {
+        return res.status(200).json({ status: "Failure", error: { errorCode: 1001, message: messages.LIMIT_EXCEEDED }, devoteeData: null });
     }
-
 }
 }
             const devoteeDetails = await allmodel.devoteemodel.findOne({ devoteeCode: code });
@@ -820,7 +806,6 @@ async function countDevoteePrasadtaken(desiredDate, timeStamp) {
        let allDevotee = await devotee.find().sort({name:1})
        let currentDevotee = await devotee.findById(req.user._id)
 let data;
-
   data = [
             {
                 title: "",
@@ -955,6 +940,7 @@ let data;
 };
 
 const prasadCount = async(req,res) =>{
+  try {
     let findPrasadDate =await allmodel.settings.find();
     console.log("findPrasadDate------",findPrasadDate)
    let firstDate = findPrasadDate[0].prasadFirstDate
@@ -1073,11 +1059,17 @@ const prasadCount = async(req,res) =>{
         }, )
 }
         res.status(200).json(data) ;
+  } catch (error) {
+    console.log("error---",error) 
+    res.status(500).json(error);
+
+  }
       }
 
 
 const prasadCountByselectdate = async(req,res)=>{
-  let data= []
+try {
+    let data= []
     async function countDevoteePrasadtaken(desiredDate, timeStamp) {
     const countResult = await allmodel.prasadModel.aggregate([
         { $unwind: '$prasad' },
@@ -1164,6 +1156,10 @@ let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
               count:  await countDevoteePrasadtaken(req.query.date,"prasad.ratraTiming")
           }, ]
           res.status(200).json(data);
+} catch (error) {
+    console.log("error --",error)
+    res.status(500).json({error});
+}
   }
 
   const prasdCountNow = async(req,res)=>{
@@ -1418,5 +1414,3 @@ module.exports = {
     createEditCoupon,
     viewCoupon
 }
-
-//
