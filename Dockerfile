@@ -13,4 +13,4 @@ ENV PORT 3000
 # Expose the specified port
 EXPOSE ${PORT}
 # Define the command to run when the container starts
-CMD ["pm2", "start", "app.js"]
+CMD ["npm", "start"]
