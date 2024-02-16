@@ -1383,6 +1383,19 @@ return res.status(200).json({ status: "Success",error: null, prasad : updatedPra
     return res.status(500).json(error)
    }
   }
+  async function viewAllCoupon(req,res) {
+    try {
+        let allCoupons = await allmodel.prasadModel.find({couponDevotee: true })
+        let allCouponList = []
+        allCoupons.forEach((coupon)=>{
+            allCouponList.push(coupon.couponCode)
+        })
+        return  res.status(200).send(allCouponList);
+    } catch (error) {
+        console.log("error - ",error)
+        return res.status(500).json(error)
+    }
+    }
 
     
 
@@ -1412,5 +1425,6 @@ module.exports = {
     offlinePrasad,
     offlinePrasadNonDevoteeCounter,
     createEditCoupon,
-    viewCoupon
+    viewCoupon,
+    viewAllCoupon
 }
