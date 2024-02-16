@@ -36,6 +36,7 @@ const devoteeSchema = new mongoose.Schema({
     updatedById: String,
     approvedBy: String,
     rejectedBy: String,
+    receivedBy: String,
     createdOn: { type: String, default: moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A") },
     updatedOn: { type: String, default: moment.tz("Asia/Kolkata").format("YYYY-MM-DD_hh:mm A") },
     status: { type: String, default: "dataSubmitted"}, 

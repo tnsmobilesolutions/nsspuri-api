@@ -178,7 +178,6 @@ if(code > 1000000){
                         return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN,prasadTakentiming :prasadTakenTiming } ,devoteeData : devoteeDetails});
                     }else {
                         let prasadFound = false;
-        
                         const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
         let prasadTakenTiming;
                         if (existingPrasad) {
