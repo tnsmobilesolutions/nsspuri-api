@@ -171,15 +171,18 @@ if(code > 1000000){
                     const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
         
                     if (existingPrasad && existingPrasad.balyaTiming && existingPrasad.MadhyannaTiming && existingPrasad.ratriTiming) {
-                        // If all timings are updated, show an error that prasad is already taken for today
-                        return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN}, devoteeData : devoteeDetails});
+                        let prasadTakenTiming;
+                        if(existingPrasad.balyaTiming) prasadTakenTiming = existingPrasad.balyaTiming
+                        if(existingPrasad.madhyanaTiming) prasadTakenTiming = existingPrasad.madhyanaTiming
+                        if(existingPrasad.ratraTiming) prasadTakenTiming = existingPrasad.ratraTiming
+                        return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN,prasadTakentiming :prasadTakenTiming } ,devoteeData : devoteeDetails});
                     }else {
                         let prasadFound = false;
         
                         const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
-        
+        let prasadTakenTiming;
                         if (existingPrasad) {
-                            console.log("prasad exist", existingPrasad)
+                            
                             if (isBalyaTime && !existingPrasad.balyaTiming) {
                                 existingPrasad.balyaTiming = currentTime;
                             } else if (isMadhyannaTime && !existingPrasad.madhyanaTiming) {
@@ -187,7 +190,10 @@ if(code > 1000000){
                             } else if (isRatraTime && !existingPrasad.ratraTiming) {
                                 existingPrasad.ratraTiming = currentTime;
                             } else {
-                                return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN} ,devoteeData : devoteeDetails});
+                                if(existingPrasad.balyaTiming) prasadTakenTiming = existingPrasad.balyaTiming
+                                if(existingPrasad.madhyanaTiming) prasadTakenTiming = existingPrasad.madhyanaTiming
+                                if(existingPrasad.ratraTiming) prasadTakenTiming = existingPrasad.ratraTiming
+                                return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN,prasadTakentiming :prasadTakenTiming } ,devoteeData : devoteeDetails});
                             }
                         } else {
                             console.log("new prasad");
