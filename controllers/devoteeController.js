@@ -849,6 +849,13 @@ let data;
             },
             {
                 title: "",
+                message: "ବିତରଣ କରାଯାଇଥିବା ପ୍ରବେଶ ପତ୍ର ସଂଖ୍ୟା",
+                translate: "Delegate Delivered",
+                status: "delivered",
+                count: await devoteeList("delivered")
+            },
+            {
+                title: "",
                 message: "ଖାରଜ ହୋଇଥିବା ପ୍ରବେଶ ପତ୍ର",
                 translate: "Rejected Delegate",
                 status: "rejected",
