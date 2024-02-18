@@ -66,6 +66,7 @@ putRequest("/offlinePrasad", devoteeController.offlinePrasad);
 putRequest("/offlinePrasadNonDevoteeCounter", devoteeController.offlinePrasadNonDevoteeCounter);
 putRequest("/createCoupon", devoteeController.createEditCoupon);
 getRequest("/viewCoupon/:code", devoteeController.viewCoupon);
+getRequest("/viewAllCoupon", devoteeController.viewAllCoupon);
 
 // getRequest("/getPrasad/:code", devoteeController.prasdUpdatedevotee);
 

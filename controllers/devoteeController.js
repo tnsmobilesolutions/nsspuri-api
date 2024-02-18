@@ -171,15 +171,17 @@ if(code > 1000000){
                     const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
         
                     if (existingPrasad && existingPrasad.balyaTiming && existingPrasad.MadhyannaTiming && existingPrasad.ratriTiming) {
-                        // If all timings are updated, show an error that prasad is already taken for today
-                        return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN}, devoteeData : devoteeDetails});
+                        let prasadTakenTiming;
+                        if(existingPrasad.balyaTiming) prasadTakenTiming = existingPrasad.balyaTiming
+                        if(existingPrasad.madhyanaTiming) prasadTakenTiming = existingPrasad.madhyanaTiming
+                        if(existingPrasad.ratraTiming) prasadTakenTiming = existingPrasad.ratraTiming
+                        return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN,prasadTakentiming :prasadTakenTiming } ,devoteeData : devoteeDetails});
                     }else {
                         let prasadFound = false;
-        
                         const existingPrasad = prasadDetails.prasad.find(prasad => prasad.date === currentDate);
-        
+        let prasadTakenTiming;
                         if (existingPrasad) {
-                            console.log("prasad exist", existingPrasad)
+                            
                             if (isBalyaTime && !existingPrasad.balyaTiming) {
                                 existingPrasad.balyaTiming = currentTime;
                             } else if (isMadhyannaTime && !existingPrasad.madhyanaTiming) {
@@ -187,7 +189,10 @@ if(code > 1000000){
                             } else if (isRatraTime && !existingPrasad.ratraTiming) {
                                 existingPrasad.ratraTiming = currentTime;
                             } else {
-                                return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN} ,devoteeData : devoteeDetails});
+                                if(existingPrasad.balyaTiming) prasadTakenTiming = existingPrasad.balyaTiming
+                                if(existingPrasad.madhyanaTiming) prasadTakenTiming = existingPrasad.madhyanaTiming
+                                if(existingPrasad.ratraTiming) prasadTakenTiming = existingPrasad.ratraTiming
+                                return res.status(200).json({ status: "Failure",error: {errorCode :1001,message: messages.PRASAD_TAKEN,prasadTakentiming :prasadTakenTiming } ,devoteeData : devoteeDetails});
                             }
                         } else {
                             console.log("new prasad");
@@ -844,6 +849,13 @@ let data;
             },
             {
                 title: "",
+                message: "ବିତରଣ କରାଯାଇଥିବା ପ୍ରବେଶ ପତ୍ର ସଂଖ୍ୟା",
+                translate: "Delegate Delivered",
+                status: "delivered",
+                count: await devoteeList("delivered")
+            },
+            {
+                title: "",
                 message: "ଖାରଜ ହୋଇଥିବା ପ୍ରବେଶ ପତ୍ର",
                 translate: "Rejected Delegate",
                 status: "rejected",
@@ -1383,6 +1395,19 @@ return res.status(200).json({ status: "Success",error: null, prasad : updatedPra
     return res.status(500).json(error)
    }
   }
+  async function viewAllCoupon(req,res) {
+    try {
+        let allCoupons = await allmodel.prasadModel.find({couponDevotee: true })
+        let allCouponList = []
+        allCoupons.forEach((coupon)=>{
+            allCouponList.push(coupon.couponCode)
+        })
+        return  res.status(200).send(allCouponList);
+    } catch (error) {
+        console.log("error - ",error)
+        return res.status(500).json(error)
+    }
+    }
 
     
 
@@ -1412,5 +1437,6 @@ module.exports = {
     offlinePrasad,
     offlinePrasadNonDevoteeCounter,
     createEditCoupon,
-    viewCoupon
+    viewCoupon,
+    viewAllCoupon
 }
