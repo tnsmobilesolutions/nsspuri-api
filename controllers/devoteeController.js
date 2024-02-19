@@ -806,7 +806,7 @@ async function countDevoteePrasadtaken(desiredDate, timeStamp) {
                   let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
     
     let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
-                  return allDevotee;
+                  return {allDevotee,devoteeprasadTakenCount,numberOfDevotee,couponNumber};
 }
        let allDevotee = await devotee.find().sort({name:1})
        let currentDevotee = await devotee.findById(req.user._id)
@@ -881,63 +881,90 @@ let data;
                 message: "ବାଲ୍ୟ",
                 translate: "breakfast",
                 status: "lost",
-                count: await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.balyaTiming")
+                count: await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.balyaTiming").allDevotee,
+                online: (await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.balyaTiming")).devoteeprasadTakenCount,
+                offline: (await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.balyaTiming")).numberOfDevotee,
+                coupon: (await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.balyaTiming")).couponNumber,
             },       
             {
                 title: secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),
                 message: "ବାଲ୍ୟ",
                 translate: "breakfast",
                 status: "lost",
-                count: await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")
+                count: (await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")).allDevotee,
+                online: (await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")).devoteeprasadTakenCount,
+                offline: (await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")).numberOfDevotee,
+                coupon: (await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")).couponNumber,
             },       
             {
                 title: thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),
                 message: "ବାଲ୍ୟ",
                 translate: "breakfast",
                 status: "lost",
-                count: await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")
+                count: (await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")).allDevotee,
+                online: (await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")).devoteeprasadTakenCount,
+                offline: (await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")).numberOfDevotee,
+                coupon: (await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.balyaTiming")).couponNumber,
             },       
             {
                 title: firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),
                 message: "ମଧ୍ୟାହ୍ନ",
                 translate: "Lunch",
                 status: "lost",
-                count: await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.madhyanaTiming")
+                count: (await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.madhyanaTiming")).allDevotee,
+                online: (await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.madhyanaTiming")).devoteeprasadTakenCount,
+                offline: (await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.madhyanaTiming")).numberOfDevotee,
+                coupon: (await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.madhyanaTiming")).couponNumber,
             },       
             {
                 title: secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),
                 message: "ମଧ୍ୟାହ୍ନ",
                 translate: "Lunch",
                 status: "lost",
-                count: await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")
+                count: (await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")).allDevotee,
+                online: (await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")).devoteeprasadTakenCount,
+                offline: (await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")).numberOfDevotee,
+                coupon: (await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")).couponNumber
             },       
             {
                 title: thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),
                 message: "ମଧ୍ୟାହ୍ନ",
                 translate: "Lunch",
                 status: "lost",
-                count: await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")
+                count: (await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")).allDevotee,
+                online: (await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")).devoteeprasadTakenCount,
+                offline: (await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")).numberOfDevotee,
+                coupon: (await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.madhyanaTiming")).couponNumber,
             },       
             {
                 title: firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),
                 message: "ରାତ୍ର",
                 translate: "Dinner",
                 status: "lost",
-                count: await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.ratraTiming")
+                count: (await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.ratraTiming")).allDevotee,
+                online: (await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.ratraTiming")).devoteeprasadTakenCount,
+                offline: (await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.ratraTiming")).numberOfDevotee,
+                coupon: (await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.ratraTiming")).couponNumber,
             },       
             {
                 title: secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),
                 message: "ରାତ୍ର",
                 translate: "Dinner",
                 status: "lost",
-                count: await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")
+                count: (await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")).allDevotee,
+                online: (await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")).devoteeprasadTakenCount,
+                offline: (await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")).numberOfDevotee,
+                coupon: (await countDevoteePrasadtaken(secondDate || moment.tz('Asia/Kolkata').clone().subtract(1, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")).couponNumber,
             },       
             {
                 title: thirdDate ||moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),
                 message: "ରାତ୍ର",
                 translate: "Dinner",
                 status: "lost",
-                count: await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")
+                count: (await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")).allDevotee,
+                online: (await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")).devoteeprasadTakenCount,
+                offline: (await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")).numberOfDevotee,
+                coupon: (await countDevoteePrasadtaken(thirdDate || moment.tz('Asia/Kolkata').clone().subtract(2, 'day').format('YYYY-MM-DD'),"prasad.ratraTiming")).couponNumber,
             },   
             
         ]
@@ -1269,7 +1296,7 @@ let pipeline1 = [
               let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
 
 let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
-              return allDevotee;
+              return {allDevotee,devoteeprasadTakenCount,numberOfDevotee,couponNumber};
         }
 
         let data;
@@ -1278,7 +1305,10 @@ let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
               date: req.query.date,
               timing: "ବାଲ୍ୟ",
               translate: "breakfast",
-              count:   await countDevoteePrasadtaken(req.query.date ,"prasad.balyaTiming")
+              count:   (await countDevoteePrasadtaken(req.query.date ,"prasad.balyaTiming")).allDevotee,
+              online:   (await countDevoteePrasadtaken(req.query.date ,"prasad.balyaTiming")).devoteeprasadTakenCount,
+              offline:   (await countDevoteePrasadtaken(req.query.date ,"prasad.balyaTiming")).numberOfDevotee,
+              coupon:   (await countDevoteePrasadtaken(req.query.date ,"prasad.balyaTiming")).couponNumber,
             }
            
           
@@ -1287,15 +1317,20 @@ let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
                 date: req.query.date,
                 timing: "ମଧ୍ୟାହ୍ନ",
                 translate: "Lunch",
-                count:  await countDevoteePrasadtaken(req.query.date,"prasad.madhyanaTiming")
+                count:   (await countDevoteePrasadtaken(req.query.date ,"prasad.madhyanaTiming")).allDevotee,
+                online:   (await countDevoteePrasadtaken(req.query.date ,"prasad.madhyanaTiming")).devoteeprasadTakenCount,
+                offline:   (await countDevoteePrasadtaken(req.query.date ,"prasad.madhyanaTiming")).numberOfDevotee,
+                coupon:   (await countDevoteePrasadtaken(req.query.date ,"prasad.madhyanaTiming")).couponNumber,
             }
         }else if(isRatraTime){
- data = {
-    date: req.query.date,
-    timing: "ରାତ୍ର",
-              translate: "Dinner",
-            
-              count:  await countDevoteePrasadtaken(req.query.date,"prasad.ratraTiming")
+            data = {
+                 date: req.query.date,
+                 timing: "ରାତ୍ର",
+                 translate: "Dinner",
+                 count:   (await countDevoteePrasadtaken(req.query.date ,"prasad.ratraTiming")).allDevotee,
+                 online:   (await countDevoteePrasadtaken(req.query.date ,"prasad.ratraTiming")).devoteeprasadTakenCount,
+                 offline:   (await countDevoteePrasadtaken(req.query.date ,"prasad.ratraTiming")).numberOfDevotee,
+                 coupon:   (await countDevoteePrasadtaken(req.query.date ,"prasad.ratraTiming")).couponNumber,
           }
         }else{
             data = {
