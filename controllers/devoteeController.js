@@ -1169,7 +1169,7 @@ try {
               let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
 
 let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
-              return allDevotee;
+              return {allDevotee,devoteeprasadTakenCount,numberOfDevotee,couponNumber};
      
     }
    
@@ -1178,21 +1178,30 @@ let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
               message: "ବାଲ୍ୟ",
               translate: "breakfast",
               status: "lost",
-              count:   await countDevoteePrasadtaken(req.query.date ,"prasad.balyaTiming")
+              count:  ( await countDevoteePrasadtaken(req.query.date ,"prasad.balyaTiming")).allDevotee,
+              online:  ( await countDevoteePrasadtaken(req.query.date ,"prasad.balyaTiming")).devoteeprasadTakenCount,
+              offline:  ( await countDevoteePrasadtaken(req.query.date ,"prasad.balyaTiming")).numberOfDevotee,
+              coupon:  ( await countDevoteePrasadtaken(req.query.date ,"prasad.balyaTiming")).couponNumber,
           },  
           {
               title: req.query.date,
               message: "ମଧ୍ୟାହ୍ନ",
               translate: "Lunch",
               status: "lost",
-              count:  await countDevoteePrasadtaken(req.query.date,"prasad.madhyanaTiming")
+              count:  ( await countDevoteePrasadtaken(req.query.date ,"prasad.madhyanaTiming")).allDevotee,
+              online:  ( await countDevoteePrasadtaken(req.query.date ,"prasad.madhyanaTiming")).devoteeprasadTakenCount,
+              offline:  ( await countDevoteePrasadtaken(req.query.date ,"prasad.madhyanaTiming")).numberOfDevotee,
+              coupon:  ( await countDevoteePrasadtaken(req.query.date ,"prasad.madhyanaTiming")).couponNumber,
           },       
           {
               title: req.query.date,
               message: "ରାତ୍ର",
               translate: "Dinner",
               status: "lost",
-              count:  await countDevoteePrasadtaken(req.query.date,"prasad.ratraTiming")
+              count:  ( await countDevoteePrasadtaken(req.query.date ,"prasad.ratraTiming")).allDevotee,
+              online:  ( await countDevoteePrasadtaken(req.query.date ,"prasad.ratraTiming")).devoteeprasadTakenCount,
+              offline:  ( await countDevoteePrasadtaken(req.query.date ,"prasad.ratraTiming")).numberOfDevotee,
+              coupon:  ( await countDevoteePrasadtaken(req.query.date ,"prasad.ratraTiming")).couponNumber,
           }, ]
           res.status(200).json(data);
 } catch (error) {
