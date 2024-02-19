@@ -881,7 +881,7 @@ let data;
                 message: "ବାଲ୍ୟ",
                 translate: "breakfast",
                 status: "lost",
-                count: await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.balyaTiming").allDevotee,
+                count: (await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.balyaTiming")).allDevotee,
                 online: (await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.balyaTiming")).devoteeprasadTakenCount,
                 offline: (await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.balyaTiming")).numberOfDevotee,
                 coupon: (await countDevoteePrasadtaken(firstDate || moment.tz('Asia/Kolkata').format('YYYY-MM-DD'),"prasad.balyaTiming")).couponNumber,
