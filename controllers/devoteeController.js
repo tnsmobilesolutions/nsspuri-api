@@ -141,13 +141,13 @@ if(code > 1000000){
             }
         }
         if (limitExceeded) {
-            return res.status(200).json({ status: "Failure", error: { errorCode: 1001, message: messages.LIMIT_EXCEEDED }, devoteeData: null });
+            return res.status(200).json({ status: "Failure", error: { errorCode: 1001, message: messages.LIMIT_EXCEEDED }, devoteeData: null,couponCode: code });
         }
     
         await couponDevoteewithDate.save();
-        return res.status(200).json({ status: "Success", error: { errorCode: 1001, message: messages.SCAN_SUCCESSFULLY }, devoteeData: null });
+        return res.status(200).json({ status: "Success", error: { errorCode: 1001, message: messages.SCAN_SUCCESSFULLY }, devoteeData: null,couponCode: code });
     } else {
-        return res.status(200).json({ status: "Failure", error: { errorCode: 1001, message: messages.LIMIT_EXCEEDED }, devoteeData: null });
+        return res.status(200).json({ status: "Failure", error: { errorCode: 1001, message: messages.LIMIT_EXCEEDED }, devoteeData: null,couponCode: code });
     }
 }
 }
