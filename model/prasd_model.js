@@ -28,6 +28,6 @@ let prasdSchema = mongoose.Schema({
         madhyanaTiming: String,
         ratraTiming: String,
     }]
-});
+},{timestamps: true});
 
 module.exports = mongoose.model("prasad", prasdSchema);
