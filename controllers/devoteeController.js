@@ -1466,10 +1466,15 @@ return res.status(200).json({ status: "Success",error: null, prasad : updatedPra
   }
   async function viewAllCoupon(req,res) {
     try {
+        let amount = 0
         let allCoupons = await allmodel.prasadModel.find({couponDevotee: true })
         let allCouponList = []
+
         allCoupons.forEach((coupon)=>{
-            allCouponList.push(coupon.couponCode)
+              coupon.couponPrasad.forEach((couponPrasad)=>{
+                coupon.amount = (((couponPrasad.balyaCount ?? 0) * 50) + (couponPrasad.balyaTiming.length * 50))  + (((couponPrasad.madhyanaCount ?? 0) * 100) + (couponPrasad.madhyanaTiming.length * 100)) + (((couponPrasad.ratraCount ?? 0) * 100) + (couponPrasad.ratraTiming.length * 100))
+            })
+            allCouponList.push(coupon)
         })
         return  res.status(200).send(allCouponList);
     } catch (error) {
