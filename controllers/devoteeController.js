@@ -164,7 +164,7 @@ if(code > 1000000){
             if (isNaN(req.params.code)) {
                 return res.status(200).json({ status: "Failure", error: { errorCode: 1002, message: messages.NO_DEVOTEEFOUND }, devoteeData: null });
             }
-            if(devoteeDetails && (devoteeDetails.status == "paid" ||devoteeDetails.status == "printed" )){
+            if(devoteeDetails && (devoteeDetails.status == "paid" || devoteeDetails.status == "printed" || devoteeDetails.status == "delivered" )){
                 const prasadDetails = await allmodel.prasadModel.findOne({ devoteeCode: parseInt(req.params.code, 10) });
             
                 if (prasadDetails && prasadDetails!= null) {
@@ -737,7 +737,6 @@ const devotee_delete = async (req, res) => {
 const admin_devoteeDashboard = async (req, res) => {
     try {
         let findPrasadDate =await allmodel.settings.find();
-        console.log("findPrasadDate------",findPrasadDate)
        let firstDate = findPrasadDate[0].prasadFirstDate
        let secondDate = findPrasadDate[0].prasadSecondDate
        let thirdDate = findPrasadDate[0].prasadThirdDate
@@ -748,26 +747,52 @@ async function devoteeList(status) {
     return statusby.length;
 }
 async function countDevoteePrasadtaken(desiredDate, timeStamp) {
-    const countResult = await allmodel.prasadModel.aggregate([
-        { $unwind: '$prasad' },
-        {
-          $match: {
-            'prasad.date': desiredDate,
-            [timeStamp]: { $ne: '' },
-          },
-        },
-        {
-          $group: {
-            _id: '$devoteeId',
-          },
-        },
-        {
-          $group: {
-            _id: null,
-            totalCount: { $sum: 1 },
-          },
-        },
-      ]);
+    // const countResult = await allmodel.prasadModel.aggregate([
+    //     { $unwind: '$prasad' },
+    //     {
+    //       $match: {
+    //         'prasad.date': desiredDate,
+    //         [timeStamp]: { $ne: '' },
+    //       },
+    //     },
+    //     {
+    //       $group: {
+    //         _id: '$devoteeId',
+    //       },
+    //     },
+    //     {
+    //       $group: {
+    //         _id: null,
+    //         totalCount: { $sum: 1 },
+    //       },
+    //     },
+    //   ]);
+      let OnlinePrasadTakenDevotee = 0
+      let countResult1 = await allmodel.prasadModel.find({"prasad.date": desiredDate})
+     for (singleResult of countResult1) {
+        singleResult.prasad.forEach((prasad)=>{
+            if(prasad.date == desiredDate){
+                if(timeStamp == "prasad.balyaTiming"){
+                    if(prasad.balyaTiming && prasad.balyaTiming != "" && prasad.balyaTiming != null){
+                        OnlinePrasadTakenDevotee ++
+                    }
+                }else if(timeStamp == "prasad.madhyanaTiming"){
+                    if(prasad.madhyanaTiming && prasad.madhyanaTiming != "" && prasad.madhyanaTiming != null){
+                        OnlinePrasadTakenDevotee ++
+                    }
+                   
+                }else if(timeStamp == "prasad.ratraTiming"){
+                    if(prasad.ratraTiming && prasad.ratraTiming != "" && prasad.ratraTiming != null){
+                        OnlinePrasadTakenDevotee ++
+                    }
+                }else{
+                    OnlinePrasadTakenDevotee = 0
+                }
+            }
+        })
+        
+     }
+
       let numberOfDevotee;
       let offlineDevoteeCounter = await allmodel.prasadModel.findOne({outsideDevotee : true,date :desiredDate})
       if(offlineDevoteeCounter){
@@ -803,7 +828,7 @@ async function countDevoteePrasadtaken(desiredDate, timeStamp) {
     
         })
       }
-                  let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+                  let devoteeprasadTakenCount = OnlinePrasadTakenDevotee
     
     let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
                   return {allDevotee,devoteeprasadTakenCount,numberOfDevotee,couponNumber};
