@@ -10,6 +10,7 @@ let prasdSchema = mongoose.Schema({
     date:String,
     prasadid : String,
     devoteeId: String,
+    couponCreatedDate: String,
     devoteeCode: Number,
     couponCode: Number,
     amount: Number,

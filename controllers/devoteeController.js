@@ -1469,6 +1469,12 @@ return res.status(200).json({ status: "Success",error: null, prasad : updatedPra
         let allCoupons = await allmodel.prasadModel.find({couponDevotee: true })
         let allCouponList = []
         allCoupons.forEach((coupon)=>{
+            if(coupon.createdAt){
+                coupon.couponCreatedDate = coupon.createdAt.toISOString().substring(0, 10);
+            }else {
+                coupon.couponCreatedDate = ""
+            }
+            
               coupon.couponPrasad.forEach((couponPrasad)=>{
                 coupon.amount = (((couponPrasad.balyaCount ?? 0) * 50) + (couponPrasad.balyaTiming.length * 50))  + (((couponPrasad.madhyanaCount ?? 0) * 100) + (couponPrasad.madhyanaTiming.length * 100)) + (((couponPrasad.ratraCount ?? 0) * 100) + (couponPrasad.ratraTiming.length * 100))
             })
