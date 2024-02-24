@@ -10,8 +10,10 @@ let prasdSchema = mongoose.Schema({
     date:String,
     prasadid : String,
     devoteeId: String,
+    couponCreatedDate: String,
     devoteeCode: Number,
     couponCode: Number,
+    amount: Number,
     couponPrasad:[{
         date: String,
         balyaCount:Number,
@@ -27,6 +29,6 @@ let prasdSchema = mongoose.Schema({
         madhyanaTiming: String,
         ratraTiming: String,
     }]
-});
+},{timestamps: true});
 
 module.exports = mongoose.model("prasad", prasdSchema);

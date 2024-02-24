@@ -736,65 +736,57 @@ const devotee_delete = async (req, res) => {
 // All Devotee or by status
 const admin_devoteeDashboard = async (req, res) => {
     try {
-        let findPrasadDate =await allmodel.settings.find();
+        let findPrasadDate =await allmodel.settings.find().lean();
        let firstDate = findPrasadDate[0].prasadFirstDate
        let secondDate = findPrasadDate[0].prasadSecondDate
        let thirdDate = findPrasadDate[0].prasadThirdDate
  
 async function devoteeList(status) {
-    let statusby ;
-        statusby = await devotee.find({status: status});
-    return statusby.length;
+    return await devotee.countDocuments({status: status}).lean();
 }
 async function countDevoteePrasadtaken(desiredDate, timeStamp) {
-    // const countResult = await allmodel.prasadModel.aggregate([
-    //     { $unwind: '$prasad' },
-    //     {
-    //       $match: {
-    //         'prasad.date': desiredDate,
-    //         [timeStamp]: { $ne: '' },
-    //       },
-    //     },
-    //     {
-    //       $group: {
-    //         _id: '$devoteeId',
-    //       },
-    //     },
-    //     {
-    //       $group: {
-    //         _id: null,
-    //         totalCount: { $sum: 1 },
-    //       },
-    //     },
-    //   ]);
-      let OnlinePrasadTakenDevotee = 0
-      let countResult1 = await allmodel.prasadModel.find({"prasad.date": desiredDate})
-     for (singleResult of countResult1) {
-        singleResult.prasad.forEach((prasad)=>{
-            if(prasad.date == desiredDate){
-                if(timeStamp == "prasad.balyaTiming"){
-                    if(prasad.balyaTiming && prasad.balyaTiming != "" && prasad.balyaTiming != null){
-                        OnlinePrasadTakenDevotee ++
-                    }
-                }else if(timeStamp == "prasad.madhyanaTiming"){
-                    if(prasad.madhyanaTiming && prasad.madhyanaTiming != "" && prasad.madhyanaTiming != null){
-                        OnlinePrasadTakenDevotee ++
-                    }
-                   
-                }else if(timeStamp == "prasad.ratraTiming"){
-                    if(prasad.ratraTiming && prasad.ratraTiming != "" && prasad.ratraTiming != null){
-                        OnlinePrasadTakenDevotee ++
-                    }
-                }else{
-                    OnlinePrasadTakenDevotee = 0
-                }
-            }
-        })
-        
-     }
+   let pipeline = [
+    {
+      $match: {
+        "prasad.date": desiredDate,
+      },
+    },
+    {
+      $unwind: {
+        path: "$prasad",
+      },
+    },
+     {
+      $match: {
+        "prasad.date": desiredDate,
+      },
+    },
+    {
+      $match: {
+        $and: [
+          {
+            [timeStamp]: {
+              $exists: true,
+            },
+          },
+          {
+            [timeStamp]: {
+              $ne: "",
+            },
+          },
+          {
+            [timeStamp]: {
+              $ne: null,
+            },
+          },
+        ],
+      },
+    },
+  ]
+      let countResult1 = await allmodel.prasadModel.aggregate(pipeline)
 
       let numberOfDevotee;
-      let offlineDevoteeCounter = await allmodel.prasadModel.findOne({outsideDevotee : true,date :desiredDate})
+      let offlineDevoteeCounter = await allmodel.prasadModel.findOne({outsideDevotee : true,date :desiredDate}).lean()
       if(offlineDevoteeCounter){
         if(timeStamp == "prasad.balyaTiming"){
             numberOfDevotee = offlineDevoteeCounter.numberOfDevoteeBalyaTaken || 0
@@ -809,7 +801,7 @@ async function countDevoteePrasadtaken(desiredDate, timeStamp) {
         numberOfDevotee = 0
       }
       let couponNumber =0
-      let coupononDate = await allmodel.prasadModel.find({couponDevotee:true,"couponPrasad.date": desiredDate})
+      let coupononDate = await allmodel.prasadModel.find({couponDevotee:true,"couponPrasad.date": desiredDate}).lean()
       if(coupononDate.length > 0){
         coupononDate.forEach((coupon)=>{
             coupon.couponPrasad.forEach((prasadCoupon)=>{
@@ -828,13 +820,13 @@ async function countDevoteePrasadtaken(desiredDate, timeStamp) {
     
         })
       }
-                  let devoteeprasadTakenCount = OnlinePrasadTakenDevotee
+                  let devoteeprasadTakenCount = countResult1.length
     
     let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
                   return {allDevotee,devoteeprasadTakenCount,numberOfDevotee,couponNumber};
 }
-       let allDevotee = await devotee.find().sort({name:1})
-       let currentDevotee = await devotee.findById(req.user._id)
+       let allDevotee = await devotee.find().sort({name:1}).lean()
+       let currentDevotee = await devotee.findById(req.user._id).lean()
 let data;
   data = [
             {
@@ -993,9 +985,6 @@ let data;
             },   
             
         ]
-
-       
-
         res.status(200).json(data)
     } catch (error) {
         console.log(error);
@@ -1135,26 +1124,45 @@ const prasadCountByselectdate = async(req,res)=>{
 try {
     let data= []
     async function countDevoteePrasadtaken(desiredDate, timeStamp) {
-    const countResult = await allmodel.prasadModel.aggregate([
-        { $unwind: '$prasad' },
-        {
-          $match: {
-            'prasad.date': desiredDate,
-            [timeStamp]: { $ne: '' },
-          },
-        },
-        {
-          $group: {
-            _id: '$devoteeId',
-          },
-        },
-        {
-          $group: {
-            _id: null,
-            totalCount: { $sum: 1 },
-          },
-        },
-      ]);
+        let pipeline =  [
+            {
+              $match: {
+                "prasad.date": desiredDate,
+              },
+            },
+            {
+              $unwind: {
+                path: "$prasad",
+              },
+            },
+             {
+              $match: {
+                "prasad.date": desiredDate,
+              },
+            },
+            {
+              $match: {
+                $and: [
+                  {
+                    [timeStamp]: {
+                      $exists: true,
+                    },
+                  },
+                  {
+                    [timeStamp]: {
+                      $ne: "",
+                    },
+                  },
+                  {
+                    [timeStamp]: {
+                      $ne: null,
+                    },
+                  },
+                ],
+              },
+            },
+          ]
+    const countResult = await allmodel.prasadModel.aggregate(pipeline);
 
    let numberOfDevotee;
   let offlineDevoteeCounter = await allmodel.prasadModel.findOne({outsideDevotee : true,date :desiredDate})
@@ -1191,7 +1199,7 @@ try {
 
     })
   }
-              let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+              let devoteeprasadTakenCount = countResult.length;
 
 let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
               return {allDevotee,devoteeprasadTakenCount,numberOfDevotee,couponNumber};
@@ -1249,45 +1257,41 @@ let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
         const isMadhyannaTime = await compareThreeTime(req.query.currentTime, madhyanaStartTime, madhyanaEndTime);
         const isRatraTime = await compareThreeTime(req.query.currentTime, ratraStartTime, ratraEndTime);
         async function countDevoteePrasadtaken(desiredDate, timeStamp) {
-let pipeline1 = [
-    { $unwind: '$prasad' },
+let pipeline =  [
     {
       $match: {
-        'prasad.date': desiredDate,
-        [timeStamp]: { $ne: '' },
+        "prasad.date": desiredDate,
       },
     },
     {
-      $group: {
-        _id: '$devoteeId',
+      $unwind: {
+        path: "$prasad",
       },
     },
-    {
-      $group: {
-        _id: null,
-        totalCount: { $sum: 1 },
+     {
+      $match: {
+        "prasad.date": desiredDate,
       },
     },
-  ]
-  let pipeline2 =  [
-    { $unwind: '$prasad' },
     {
       $match: {
-        'outsideDevotee': true,
-        'prasad.date': desiredDate,
-        [timeStamp]: { $ne: '' },
-
-      },
-    },
-    {
-      $group: {
-        _id: desiredDate,
-      },
-    },
-    {
-      $group: {
-        _id: null,
-        totalCount: { $sum: 1 },
+        $and: [
+          {
+            [timeStamp]: {
+              $exists: true,
+            },
+          },
+          {
+            [timeStamp]: {
+              $ne: "",
+            },
+          },
+          {
+            [timeStamp]: {
+              $ne: null,
+            },
+          },
+        ],
       },
     },
   ]
@@ -1326,8 +1330,8 @@ let pipeline1 = [
 
     })
   }
-            const countResult = await allmodel.prasadModel.aggregate(pipeline1);
-              let devoteeprasadTakenCount = countResult.length > 0 ? countResult[0].totalCount : 0;
+            const countResult = await allmodel.prasadModel.aggregate(pipeline);
+              let devoteeprasadTakenCount = countResult.length
 
 let allDevotee = devoteeprasadTakenCount + numberOfDevotee + couponNumber
               return {allDevotee,devoteeprasadTakenCount,numberOfDevotee,couponNumber};
@@ -1469,7 +1473,16 @@ return res.status(200).json({ status: "Success",error: null, prasad : updatedPra
         let allCoupons = await allmodel.prasadModel.find({couponDevotee: true })
         let allCouponList = []
         allCoupons.forEach((coupon)=>{
-            allCouponList.push(coupon.couponCode)
+            if(coupon.createdAt){
+                coupon.couponCreatedDate = coupon.createdAt.toISOString().substring(0, 10);
+            }else {
+                coupon.couponCreatedDate = ""
+            }
+            
+              coupon.couponPrasad.forEach((couponPrasad)=>{
+                coupon.amount = (((couponPrasad.balyaCount ?? 0) * 50) + (couponPrasad.balyaTiming.length * 50))  + (((couponPrasad.madhyanaCount ?? 0) * 100) + (couponPrasad.madhyanaTiming.length * 100)) + (((couponPrasad.ratraCount ?? 0) * 100) + (couponPrasad.ratraTiming.length * 100))
+            })
+            allCouponList.push(coupon)
         })
         return  res.status(200).send(allCouponList);
     } catch (error) {
