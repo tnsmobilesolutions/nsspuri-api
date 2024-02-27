@@ -14,6 +14,7 @@ let prasdSchema = mongoose.Schema({
     devoteeCode: Number,
     couponCode: Number,
     amount: Number,
+    totalCouponAmount:{},
     couponPrasad:[{
         date: String,
         balyaCount:Number,

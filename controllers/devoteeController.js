@@ -1470,7 +1470,99 @@ return res.status(200).json({ status: "Success",error: null, prasad : updatedPra
   }
   async function viewAllCoupon(req,res) {
     try {
+
         let allCoupons = await allmodel.prasadModel.find({couponDevotee: true })
+        let allCouponAmount = await allmodel.prasadModel.aggregate([
+            {
+              "$match": {
+                "couponDevotee": true,
+              }
+            },
+            {
+              "$unwind": {
+                "path": "$couponPrasad"
+              }
+            },
+            {
+              "$group": {
+                "_id": null,
+                "totalBalya": {
+                  "$sum": "$couponPrasad.balyaCount"
+                },
+                "totalMadhyanna": {
+                  "$sum": "$couponPrasad.madhyanaCount"
+                },
+                "totalRatra": {
+                  "$sum": "$couponPrasad.ratraCount"
+                },
+                "totalBalyaTiming": {
+                  "$sum": {
+                    "$size": "$couponPrasad.balyaTiming"
+                  }
+                },
+                "totalMadhayannaTiming": {
+                  "$sum": {
+                    "$size": "$couponPrasad.madhyanaTiming"
+                  }
+                },
+                "totalRatraTiming": {
+                  "$sum": {
+                    "$size": "$couponPrasad.ratraTiming"
+                  }
+                }
+              }
+            },
+            {
+              "$addFields": {
+                "sumOfBalyaAndTiming": {
+                  "$add": ["$totalBalya", "$totalBalyaTiming"]
+                }
+              }
+            },
+            {
+              "$addFields": {
+                "sumOfMadhayannaAndTiming": {
+                  "$add": ["$totalMadhyanna", "$totalMadhayannaTiming"]
+                }
+              }
+            },
+            {
+              "$addFields": {
+                "sumOfRatraAndTiming": {
+                  "$add": ["$totalRatra", "$totalRatraTiming"]
+                }
+              }
+            },
+            {
+              "$addFields": {
+                "balyaAmount": {
+                  $multiply: ["$sumOfBalyaAndTiming", 50]
+                }
+              }
+            },
+            {
+              "$addFields": {
+                "MadhyanaAmount": {
+                  $multiply: ["$sumOfMadhayannaAndTiming", 100]
+                }
+              }
+            },
+            {
+              "$addFields": {
+                "ratraAmount": {
+                  $multiply: ["$sumOfRatraAndTiming", 100]
+                }
+              }
+            },
+            {
+              "$addFields": {
+                "totalCouponAmount": {
+                  $add: ["$balyaAmount", "$MadhyanaAmount","$ratraAmount"]
+                }
+              }
+            },
+          ]
+          )
         let allCouponList = []
         allCoupons.forEach((coupon)=>{
             if(coupon.createdAt){
@@ -1478,10 +1570,10 @@ return res.status(200).json({ status: "Success",error: null, prasad : updatedPra
             }else {
                 coupon.couponCreatedDate = ""
             }
-            
               coupon.couponPrasad.forEach((couponPrasad)=>{
                 coupon.amount = (((couponPrasad.balyaCount ?? 0) * 50) + (couponPrasad.balyaTiming.length * 50))  + (((couponPrasad.madhyanaCount ?? 0) * 100) + (couponPrasad.madhyanaTiming.length * 100)) + (((couponPrasad.ratraCount ?? 0) * 100) + (couponPrasad.ratraTiming.length * 100))
             })
+            coupon.totalCouponAmount = allCouponAmount[0]
             allCouponList.push(coupon)
         })
         return  res.status(200).send(allCouponList);
