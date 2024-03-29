@@ -7,8 +7,15 @@ const uuid = require("uuid")
 async function createEvent(req,res) {
     try {
         let data = req.body
-   createdData =  await allmodel.eventModel.create(data);
-   res.json(createdData)
+        let createData
+        let existingEvent = await allmodel.eventModel.findOne({eventId: data.eventId,devoteeCode:data.devoteeCode}); 
+
+        if(!existingEvent){
+            createData =  await allmodel.eventModel.create(data);
+        }else{
+createData = await allmodel.eventModel.findOneAndUpdate({eventId: data.eventId,devoteeCode:data.devoteeCode},{$set:data})
+        }
+        res.json(createData)
     } catch (error) {
         console.log('createEventError',error)
         res.json('createEventError',error)
@@ -18,7 +25,7 @@ async function createEvent(req,res) {
 async function getSingleEvent(req,res) {
     try {
         const devoteeCode = parseInt(req.query.devoteeCode);
-   createdData =  await allmodel.eventModel.findOne({eventId:req.params.eventId,devoteeCode:devoteeCode});
+   createdData =  await allmodel.eventModel.findOne({eventAntendeeId:req.params.eventAntendeeId});
    res.json(createdData)
     } catch (error) {
         console.log('createEventError',error)
@@ -40,7 +47,7 @@ async function updateEvent(req,res) {
     try {
         let data = req.body
         const devoteeCode = parseInt(req.query.devoteeCode);
-        createdData =  await allmodel.eventModel.findOneandUpdate({eventId:req.params.eventId,devoteeCode:devoteeCode},{$set:data})
+        createdData =  await allmodel.eventModel.findOneandUpdate({eventAntendeeId:req.params.eventAntendeeId},{$set:data})
         res.json(createdData)
          } catch (error) {
              console.log('createEventError',error)
@@ -51,7 +58,7 @@ async function updateEvent(req,res) {
 async function deleteSingleEvent(req,res) {
     try {
         const devoteeCode = parseInt(req.query.devoteeCode);
-    createdData =  await allmodel.eventModel.delete({eventId:req.params.eventId,devoteeCode:devoteeCode})
+    createdData =  await allmodel.eventModel.delete({eventAntendeeId:req.params.eventAntendeeIde})
     res.json(createdData)
      } catch (error) {
          console.log('createEventError',error)
