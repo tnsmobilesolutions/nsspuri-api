@@ -1485,7 +1485,7 @@ return res.status(200).json({ status: "Success",error: null, prasad : updatedPra
             },
             {
               "$group": {
-                "_id": null,
+                "_id": couponCode,
                 "totalBalya": {
                   "$sum": "$couponPrasad.balyaCount"
                 },
@@ -1561,6 +1561,11 @@ return res.status(200).json({ status: "Success",error: null, prasad : updatedPra
                 }
               }
             },
+            {
+                $project:{
+                    
+                }
+            }
           ]
           )
         let allCouponList = []

@@ -106,5 +106,15 @@ getRequest("/address", addressController.address_all);
 getRequest("/address/:id", addressController.address_details);
 deleteRequest("/address/:id", addressController.address_delete);
 router.put("/updateFromDB",allController.dbController.updateDOB)
+router.get("/getTotalAmountCollected",allController.dbController.getTotalAmountCollected)
+router.get("/updateFromDB",allController.dbController.totalCouponAmount)
+
+//event route
+postRequest("/createEvent", allController.eventController.createEvent);
+putRequest("/updateEvent/:eventId", allController.eventController.updateEvent);
+getRequest("/allEvent/:eventId", allController.eventController.getAllEvent);
+getRequest("/singleEvent/:eventId", allController.eventController.getSingleEvent);
+deleteRequest("/deleteEvent/:eventId", allController.eventController.deleteSingleEvent);
+
 
 module.exports = router;
