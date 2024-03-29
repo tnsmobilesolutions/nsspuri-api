@@ -110,11 +110,11 @@ router.get("/getTotalAmountCollected",allController.dbController.getTotalAmountC
 router.get("/updateFromDB",allController.dbController.totalCouponAmount)
 
 //event route
-postRequest("/createEvent", allController.eventController.createEvent);
-putRequest("/updateEvent/:eventId", allController.eventController.updateEvent);
-getRequest("/allEvent/:eventId", allController.eventController.getAllEvent);
-getRequest("/singleEvent/:eventId", allController.eventController.getSingleEvent);
-deleteRequest("/deleteEvent/:eventId", allController.eventController.deleteSingleEvent);
+postRequest("/eventAttendees/createEvent", allController.eventController.createEvent);
+putRequest("/eventAttendees/updateEvent/:eventId", allController.eventController.updateEvent);
+getRequest("/eventAttendees/allEvent/:eventId", allController.eventController.getAllEvent);
+getRequest("/eventAttendees/singleEvent/:eventId", allController.eventController.getSingleEvent);
+deleteRequest("/eventAttendees/deleteEvent/:eventId", allController.eventController.deleteSingleEvent);
 
 
 module.exports = router;
