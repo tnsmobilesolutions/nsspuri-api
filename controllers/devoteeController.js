@@ -500,6 +500,16 @@ const devotee_with_relatives = async (req, res) => {
         const numberofskipdata = (page - 1) * limit;
         let count = await devotee.countDocuments({createdById: req.user.devoteeId})
         const singleDevotee = await devotee.find({createdById: req.user.devoteeId}).sort(sort).skip(numberofskipdata).limit(limit); 
+        if (req.query.eventId) {
+            for (let devotee of singleDevotee) {
+                let event = await allmodel.eventModel.findOne({ eventId: req.query.eventId, devoteeCode: devotee.devoteeCode }).lean();
+                if (!event) {
+                    devotee.eventAttendance = null;
+                } else {
+                    devotee.eventAttendance = event.eventAttendance;
+                }
+            }
+        }
         const totalPages = Math.ceil(count / limit);
         res.status(200).json({singleDevotee,count,totalPages,page})
     } catch (error) {
@@ -525,17 +535,47 @@ const searchDevotee = async (req, res) => {
     try {
         if(req.query.status){
                 count = await devotee.countDocuments({status: {"$regex": `${req.query.status}`, '$options': 'i' }})
-                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort(sort).skip(numberofskipdata).limit(limit); 
-           
+                searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort(sort).skip(numberofskipdata).limit(limit).lean(); 
+                if (req.query.eventId) {
+                    for (let devotee of searchDevotee) {
+                        let event = await allmodel.eventModel.findOne({ eventId: req.query.eventId, devoteeCode: devotee.devoteeCode }).lean();
+                        if (!event) {
+                            devotee.eventAttendance = null;
+                        } else {
+                            devotee.eventAttendance = event.eventAttendance;
+                        }
+                    }
+                }
             
         }
         if(req.query.devoteeName){
             count = await devotee.find({name: {"$regex": `${req.query.devoteeName}`, '$options': 'i' }})
          searchDevotee = await devotee.find({name: {"$regex": `${req.query.devoteeName}`, '$options': 'i' }}).sort(sort).skip(numberofskipdata).limit(limit); ;
+         if (req.query.eventId) {
+            for (let devotee of searchDevotee) {
+                let event = await allmodel.eventModel.findOne({ eventId: req.query.eventId, devoteeCode: devotee.devoteeCode }).lean();
+                if (!event) {
+                    devotee.eventAttendance = null;
+                } else {
+                    devotee.eventAttendance = event.eventAttendance;
+                }
+            }
+        }
+        
         }
         if(req.query.status && req.query.devoteeName){
             count = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } })
             searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' },name:{"$regex": `${req.query.devoteeName}`, '$options': 'i' } }).sort(sort).skip(numberofskipdata).limit(limit); 
+            if (req.query.eventId) {
+                for (let devotee of searchDevotee) {
+                    let event = await allmodel.eventModel.findOne({ eventId: req.query.eventId, devoteeCode: devotee.devoteeCode }).lean();
+                    if (!event) {
+                        devotee.eventAttendance = null;
+                    } else {
+                        devotee.eventAttendance = event.eventAttendance;
+                    }
+                }
+            }
         }
         const totalPages = Math.ceil(count / limit);
 
@@ -591,6 +631,7 @@ const advanceSearchDevotee = async (req, res) => {
         if(req.query.advanceStatus){
             if(req.query.sangha){
                 searchDevotee = await devotee.find({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' },status: req.query.advanceStatus}).sort(sort).skip(numberofskipdata).limit(limit); 
+                
                 count = await devotee.countDocuments({sangha: {"$regex": `${req.query.sangha}`, '$options': 'i' },status: req.query.advanceStatus}) 
             }else if(req.query.status){
                 searchDevotee = await devotee.find({status: {"$regex": `${req.query.status}`, '$options': 'i' }}).sort(sort).skip(numberofskipdata).limit(limit); 
