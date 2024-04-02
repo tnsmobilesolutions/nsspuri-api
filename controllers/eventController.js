@@ -35,7 +35,7 @@ async function getSingleEvent(req,res) {
 
 async function getAllEvent(req,res) {
     try {
-        createdData =  await allmodel.eventModel.find({eventId:req.params.eventId}).sort({createdAt:-1});
+        createdData =  await allmodel.eventModel.find({eventId:req.params.eventId,eventAttendance:true}).sort({createdAt:-1});
         res.json(createdData)
          } catch (error) {
              console.log('createEventError',error)
