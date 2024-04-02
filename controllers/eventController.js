@@ -52,6 +52,9 @@ async function getAllEvent(req,res) {
           },
            {
              $unwind: '$devotee'
+           },
+           {
+             $sort: {'createdAt':-1}
            }
           ])
         res.json(createdData)
