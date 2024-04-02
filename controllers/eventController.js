@@ -35,7 +35,25 @@ async function getSingleEvent(req,res) {
 
 async function getAllEvent(req,res) {
     try {
-        createdData =  await allmodel.eventModel.find({eventId:req.params.eventId,eventAttendance:true}).sort({createdAt:-1});
+        // createdData =  await allmodel.eventModel.find({eventId:req.params.eventId,eventAttendance:true}).sort({createdAt:-1});
+        createdData =  await allmodel.eventModel.aggregate([{
+            $match: {
+              $and:[
+                {eventId:req.params.eventId},
+                {eventAttendance:true}
+              ]
+            },},
+            {  $lookup: {
+              from: 'devotees',
+              localField: 'devoteeCode',
+              foreignField: 'devoteeCode',
+              as: 'devotee'
+            }
+          },
+           {
+             $unwind: '$devotee'
+           }
+          ])
         res.json(createdData)
          } catch (error) {
              console.log('createEventError',error)
