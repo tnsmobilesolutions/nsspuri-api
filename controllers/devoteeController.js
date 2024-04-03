@@ -682,6 +682,16 @@ const advanceSearchDevotee = async (req, res) => {
                 count = await devotee.countDocuments({devoteeCode: req.query.devoteeCode})
             }
         }
+        if (req.query.eventId) {
+            for (let devotee of searchDevotee) {
+                let event = await allmodel.eventModel.findOne({ eventId: req.query.eventId, devoteeCode: devotee.devoteeCode }).lean();
+                if (!event) {
+                    devotee.eventAttendance = null;
+                } else {
+                    devotee.eventAttendance = event.eventAttendance;
+                }
+            }
+        }
         const totalPages = Math.ceil(count / limit);
         for (let i = 0; i < searchDevotee.length; i++) {
             let approvedByDevoteename = "";
