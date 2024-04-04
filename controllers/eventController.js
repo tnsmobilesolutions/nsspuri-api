@@ -58,7 +58,7 @@ async function getAllEvent(req,res) {
              $unwind: '$devotee'
            },
            )
-        if(req.query.search && req.query.searchBy){
+        if(req.query.search && req.query.searchBy && req.query.search != '' && req.query.searchBy != ''){
             if(req.query.searchBy == "name"){
 pipeline.push({
     $match: {
